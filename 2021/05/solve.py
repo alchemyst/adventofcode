@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import re
 
 debug = False
-filename = 'sample.txt' if debug else 'input.txt'
+filename = 'test.txt' if debug else 'input.txt'
 
 lines = []
 

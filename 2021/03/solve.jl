@@ -1,6 +1,6 @@
 using StatsBase
 
-lines = map(collect, readlines("sample.txt"))
+lines = map(collect, readlines("input.txt"))
 data = permutedims(hcat(lines...))
 
 function bitcount(bits)
