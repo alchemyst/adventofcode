@@ -50,3 +50,7 @@ tries = [(xi, distance(xi)) for xi in x]
 tries.sort(key=lambda i: i[1])
 
 tries[0]
+
+# After the fact realisation:
+# Part 1 is solved by the median (see https://math.stackexchange.com/questions/113270/the-median-minimizes-the-sum-of-absolute-deviations-the-ell-1-norm)
+# Part 2 is solved by the mean (I think, but not sure why).
