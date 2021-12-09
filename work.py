@@ -8,7 +8,7 @@ import sys
 date = datetime.date.today()
 
 year = date.year
-day = date.day + 1
+day = date.day
 
 target_dir = pathlib.Path(str(year), f'{day:02d}')
 template = pathlib.Path('template')
