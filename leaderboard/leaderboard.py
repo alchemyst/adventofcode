@@ -11,9 +11,11 @@ STARTTIME = 7
 
 TICKS_AND_LABELS = [
     [5*60, '5 mins'],
+    [10*60, '10 mins'],
     [15*60, '15 mins'],
     [30*60, '30 mins'],
     [60*60, '1 hour'],
+    [12*60*60, '12 hours'],
     [2*60*60, '2 hours'],
     [60*60*24, '1 day'],
 ]
@@ -57,7 +59,13 @@ for i, (name, data) in enumerate(df.groupby('name')):
     last_star = data_by_day.loc[last_day, 'star_2']
 
     color = f'C{i}'
-    ax.fill_between(data_by_day.index, data_by_day['star_1'], data_by_day['star_2'], color=color, alpha=0.5)
+    ax.fill_between(
+        data_by_day.index,
+        data_by_day['star_1'],
+        data_by_day['star_2'],
+        color=color,
+        alpha=0.7
+    )
     ax.text(last_day, last_star, name)
 
 ax.set(
