@@ -1,5 +1,7 @@
 import json
 import datetime
+
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -8,6 +10,7 @@ plt.style.use('dark_background')
 YEAR = 2021
 MONTH = 12
 STARTTIME = 7
+LABEL_SEP = 0.1
 
 TICKS_AND_LABELS = [
     [5*60, '5 mins'],
@@ -39,11 +42,14 @@ for member_key, member in leaderboard['members'].items():
             'day': day,
         }
         for level in ('1', '2'):
-            ts = stats[level]['get_star_ts']
-            completed = datetime.datetime.fromtimestamp(ts)
-            duration = completed - competition_start
-
-            day_data[f'star_{level}'] = duration.total_seconds()
+            if level in stats:
+                ts = stats[level]['get_star_ts']
+                completed = datetime.datetime.fromtimestamp(ts)
+                duration = completed - competition_start
+                seconds = duration.total_seconds()
+            else:
+                seconds = None
+            day_data[f'star_{level}'] = seconds
 
         data.append(day_data)
 
@@ -52,6 +58,15 @@ df = pd.DataFrame(data)
 print(df.sort_values(['day', 'star_2']))
 
 fig, ax = plt.subplots(dpi=150)
+
+last = df['day'].max()
+last_time_on_last_day = df[df['day'] == last]['star_2'].max()
+days = np.arange(1, last + 1)
+
+catchup_curve = last_time_on_last_day + (last - days)*60*60*24
+
+ax.plot(days, catchup_curve, '--', color='pink', alpha=0.5)
+ax.text(1 + LABEL_SEP, max(catchup_curve), 'Limit for new data')
 
 for i, (name, data) in enumerate(df.groupby('name')):
     data_by_day = data.set_index('day').sort_index()
@@ -64,9 +79,9 @@ for i, (name, data) in enumerate(df.groupby('name')):
         data_by_day['star_1'],
         data_by_day['star_2'],
         color=color,
-        alpha=0.7
+        alpha=0.7,
     )
-    ax.text(last_day, last_star, name)
+    ax.text(last_day + LABEL_SEP, last_star, name)
 
 ax.set(
     title=f'Advent of code {YEAR}',
@@ -75,6 +90,7 @@ ax.set(
     yticklabels=LABELS,
     xticks=range(1, df['day'].max()+1),
     xlabel='Day',
+    xlim=[1, last]
 )
 
 plt.show()
