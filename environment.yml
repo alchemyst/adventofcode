@@ -1,0 +1,17 @@
+name: advent310
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - scipy
+  - python=3.10
+  - ipykernel
+  - pandas
+  - numpy
+  - jupyterlab
+  - ca-certificates
+  - certifi
+  - openssl
+  - matplotlib
+  - rich
+  - networkx
