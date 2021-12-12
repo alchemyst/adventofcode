@@ -21,17 +21,19 @@ def smallcave(cave):
     return cave.lower() == cave
 
 
-def paths1(start, stop, pathsofar):
+def traverse(start, stop, pathsofar, valid):
     if start == stop:
-        yield pathsofar.copy()
+        yield pathsofar
+    else:
+        for cave in graph.neighbors(start):
+            if valid(cave, pathsofar):
+                yield from traverse(cave, stop, pathsofar + [cave], valid)
 
-    for cave in graph.neighbors(start):
-        if smallcave(cave) and cave in pathsofar:
-            continue
-        yield from paths1(cave, stop, pathsofar + [cave])
 
+def valid_part_1(cave, pathsofar):
+    return not (smallcave(cave) and cave in pathsofar)
 
-def valid_visit(cave, pathsofar):
+def valid_part_2(cave, pathsofar):
     if cave == 'start':
         return False
     if smallcave(cave):
@@ -44,21 +46,10 @@ def valid_visit(cave, pathsofar):
     return True
 
 
-def paths2(start, stop, pathsofar):
-    if start == stop:
-        yield pathsofar
-    else:
-        for cave in graph.neighbors(start):
-            if valid_visit(cave, pathsofar):
-                yield from paths2(cave, stop, pathsofar + [cave])
-
-
 graph = parse(filename)
 
-allpaths = list(paths1('start', 'end', ['start']))
-
+allpaths = list(traverse('start', 'end', ['start'], valid_part_1))
 print('Part 1:', len(allpaths))
 
-allpaths2 = list(paths2('start', 'end', ['start']))
-
+allpaths2 = list(traverse('start', 'end', ['start'], valid_part_2))
 print('Part 2:', len(allpaths2))
