@@ -11,7 +11,9 @@ URL = f"https://adventofcode.com/2021/leaderboard/private/view/{LEADERBOARD_ID}.
 
 target = pathlib.Path(f'{LEADERBOARD_ID}.json')
 
-if target.exists() and modified(target) < datetime.timedelta(minutes=15):
+modified = datetime.datetime.now() - datetime.datetime.fromtimestamp(target.stat().st_mtime)
+
+if target.exists() and modified < datetime.timedelta(minutes=15):
     sys.exit()
 
 # Get user token

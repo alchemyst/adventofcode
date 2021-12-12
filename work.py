@@ -8,9 +8,8 @@ import aocd
 date = datetime.date.today()
 
 parser = argparse.ArgumentParser()
-parser.add_argument('year', type=int, default=date.year)
-parser.add_argument('day', type=int, default=date.day)
-parser.add_argument('--test', action='store_true')
+parser.add_argument('--year', type=int, default=date.year)
+parser.add_argument('--day', type=int, default=date.day)
 
 args = parser.parse_args()
 

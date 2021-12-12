@@ -54,10 +54,16 @@ for member_key, member in leaderboard['members'].items():
         data.append(day_data)
 
 df = pd.DataFrame(data)
-
+df['diff'] = df['star_2'] - df['star_1']
 print(df.sort_values(['day', 'star_2']))
 
-fig, ax = plt.subplots(dpi=150)
+fig, (ax_abs_time, ax_diff) = plt.subplots(
+    2, 1,
+    sharex=True,
+    figsize=(6, 6),
+    dpi=150,
+    gridspec_kw={'height_ratios': [2, 1]},
+)
 
 last = df['day'].max()
 last_time_on_last_day = df[df['day'] == last]['star_2'].max()
@@ -65,8 +71,8 @@ days = np.arange(1, last + 1)
 
 catchup_curve = last_time_on_last_day + (last - days)*60*60*24
 
-ax.plot(days, catchup_curve, '--', color='pink', alpha=0.5)
-ax.text(1 + LABEL_SEP, max(catchup_curve), 'Limit for new data')
+ax_abs_time.plot(days, catchup_curve, '--', color='pink', alpha=0.5)
+ax_abs_time.text(1 + LABEL_SEP, max(catchup_curve), 'Limit for new data')
 
 for i, (name, data) in enumerate(df.groupby('name')):
     data_by_day = data.set_index('day').sort_index()
@@ -74,23 +80,39 @@ for i, (name, data) in enumerate(df.groupby('name')):
     last_star = data_by_day.loc[last_day, 'star_2']
 
     color = f'C{i}'
-    ax.fill_between(
+    ax_abs_time.fill_between(
         data_by_day.index,
         data_by_day['star_1'],
         data_by_day['star_2'],
         color=color,
         alpha=0.7,
     )
-    ax.text(last_day + LABEL_SEP, last_star, name)
+    ax_abs_time.text(last_day + LABEL_SEP, last_star, name)
 
-ax.set(
+    doneboth = data_by_day.dropna()
+    last_day = doneboth.index.max()
+    last_diff = doneboth.loc[last_day, 'diff']
+
+    ax_diff.plot(data_by_day.index, data_by_day['diff'], color=color)
+    ax_diff.text(last_day + LABEL_SEP, last_diff, name)
+
+ax_abs_time.set(
     title=f'Advent of code {YEAR}',
     yscale='log',
     yticks=TICKS,
     yticklabels=LABELS,
+)
+
+ax_diff.set(
+    yscale='log',
+    ylabel='star_2 - star_1',
     xticks=range(1, df['day'].max()+1),
+    yticks=(60,) + TICKS[:4],
+    yticklabels=('1 min',) + LABELS[:4],
     xlabel='Day',
     xlim=[1, last]
 )
 
+
+plt.tight_layout()
 plt.show()
