@@ -1,6 +1,6 @@
 import rich
 import rich.text
-
+import numpy as np
 
 def print_board(array, highlight=None, length=1):
     if highlight is None:

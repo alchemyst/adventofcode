@@ -1,8 +1,9 @@
 import numpy as np
 from scipy import ndimage
 from aoc import print_board
+from collections import Counter
 
-debug = True
+debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
 data = []
@@ -17,8 +18,21 @@ cross[1, 1] = False
 
 mins = ndimage.minimum_filter(heightmap, footprint=cross, mode='constant', cval=10)
 minima = heightmap < mins
-print_board(heightmap, minima)
+if debug:
+    print_board(heightmap, minima)
 
 minimum_heights = heightmap[minima]
 risk_level = minimum_heights + 1
 print('Part 1:', sum(risk_level))
+
+if debug:
+    print_board(heightmap, heightmap < 9)
+    print()
+
+labels, nbasins = ndimage.label(heightmap < 9)
+
+basincounts = Counter(labels[labels != 0].ravel())
+
+largest_basins = [size for basin, size in basincounts.most_common(3)]
+
+print('Part 2:', np.prod(largest_basins))
