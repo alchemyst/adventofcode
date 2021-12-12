@@ -2,5 +2,5 @@
 input.txt
 sample.txt
 *test*.txt
-
 .idea
+leaderboard/*.json
