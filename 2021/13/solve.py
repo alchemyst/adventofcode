@@ -2,35 +2,39 @@ import numpy as np
 import re
 from aoc import print_board
 
-chars = {0: '.', 1: '#'}
-def p(board):
-    print_board(board, lookup=chars, type='s')
-
 foldre = re.compile(r'fold along ([xy])=(\d+)')
 
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
-xs = []
-ys = []
-folds = []
-with open(filename) as f:
-    for line in f:
-        line = line.strip()
-        if not line:
-            continue
-        if ',' in line:
-            x, y = map(int, line.split(','))
-            xs.append(x)
-            ys.append(y)
-        if 'fold' in line:
-            m = foldre.match(line)
-            direction, pos = m.groups()
-            pos = int(pos)
-            folds.append([direction, pos])
 
-board = np.zeros((max(ys)+1, max(xs)+1), dtype=int)
-board[ys, xs] = 1
+def p(board):
+    print_board(board, lookup={0: '.', 1: '#'}, type='s')
+
+
+def parse(filename):
+    xs = []
+    ys = []
+    folds = []
+    with open(filename) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            if ',' in line:
+                x, y = map(int, line.split(','))
+                xs.append(x)
+                ys.append(y)
+            if 'fold' in line:
+                m = foldre.match(line)
+                direction, pos = m.groups()
+                pos = int(pos)
+                folds.append([direction, pos])
+
+    board = np.zeros((max(ys)+1, max(xs)+1), dtype=int)
+    board[ys, xs] = 1
+
+    return board, folds
 
 
 def foldud(board, position):
@@ -54,16 +58,13 @@ def foldud(board, position):
     return newboard
 
 
-def rot(board):
-    return np.rot90(board, k=3)
-
-
 def dofold(board, direction, position):
     if direction == 'y':
         return foldud(board, position)
     else:
         return foldud(board.T, position).T
 
+board, folds = parse(filename)
 
 # Part 1
 if debug:
@@ -81,4 +82,4 @@ for direction, position in folds[1:]:
     newboard = dofold(newboard, direction, position)
 
 print("Part 2:")
-p(newboard)
+print_board(newboard, lookup={1: '█', 0: ' '}, type='s')
