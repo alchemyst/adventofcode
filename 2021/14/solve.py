@@ -8,7 +8,6 @@ def pairwise(iterable):
     return zip(iterable, iterable[1:])
 
 def parse(filename):
-    rules = {}
     with open(filename) as f:
         template = next(f).strip()
         next(f)
