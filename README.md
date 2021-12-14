@@ -6,5 +6,8 @@ I like doing these with as little help as possible, and most of these are just t
 
 You will need Jupyter Notebook for some of them, with numpy and scipy.
 
-The requirements.txt is not perfectly up to date.
+To build an environment which matches the one I was solving 2021 in, use
 
+```python
+conda env create -f environment.yml
+```
