@@ -3,7 +3,8 @@ import pathlib
 import sys
 
 import requests
-import aocd
+
+import aoc_api
 
 LEADERBOARD_ID = "1189810"
 
@@ -16,10 +17,15 @@ modified = datetime.datetime.now() - datetime.datetime.fromtimestamp(target.stat
 if target.exists() and modified < datetime.timedelta(minutes=15):
     sys.exit()
 
-# Get user token
-user = aocd.get.default_user()
-token = user.token
-
-data = requests.get(URL, cookies={'session': token})
+data = aoc_api.get(URL)
 
 target.write_bytes(data.content)
+
+top100_url = "https://www.maurits.vdschee.nl/scatterplot/scores.tsv"
+
+top100_target = pathlib.Path("scores.tsv")
+
+top100_data = requests.get(top100_url)
+top100_target.write_bytes(top100_data.content)
+
+
