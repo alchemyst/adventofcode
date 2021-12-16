@@ -1,17 +1,19 @@
 import networkx
 import numpy as np
-from aoc import print_board
+from aoc import print_board, solution
 
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
-data = []
+def parse(filename):
+    data = []
 
-with open(filename) as f:
-    for line in f:
-        data.append([int(c) for c in line.strip()])
+    with open(filename) as f:
+        for line in f:
+            data.append([int(c) for c in line.strip()])
 
-board = np.array(data)
+    return np.array(data)
+
 
 def build_graph(board):
     maxi, maxj = board.shape
@@ -37,6 +39,7 @@ def build_graph(board):
 
     return graph
 
+
 def pathboard(path, board):
     highlight = np.zeros_like(board)
 
@@ -54,7 +57,7 @@ def solve(board):
 
     shortest = networkx.shortest_path(
         graph, start, end,
-        weight='cost'
+        weight='cost',
     )
 
     i, j = zip(*shortest)
@@ -64,11 +67,10 @@ def solve(board):
         print_board(board, pathboard(shortest, board))
 
     return cost
+
 #  part 1
-
-
-print("Part 1:", solve(board))
-
+board = parse(filename)
+solution(solve(board))
 
 # Part 2
 ii, jj = np.meshgrid(range(5), range(5))
@@ -77,5 +79,4 @@ bigboard = (np.tile(board, (5, 5)) + np.kron(shape, np.ones_like(board)))
 bigboard[bigboard > 9] -= 9
 bigboard[bigboard > 9] -= 9
 
-print("Part 2", solve(bigboard))
-
+solution(solve(bigboard))

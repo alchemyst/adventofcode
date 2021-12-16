@@ -1,6 +1,10 @@
+import time
+
 import rich
 import rich.text
 import numpy as np
+
+STATS = {'start': time.perf_counter(), 'times': []}
 
 def print_board(array, highlight=None, length=1, lookup=None, type='d'):
     if highlight is None:
@@ -16,3 +20,12 @@ def print_board(array, highlight=None, length=1, lookup=None, type='d'):
                 text.stylize(style='bold magenta')
             rich.print(text, end='')
         rich.print()
+
+
+def solution(value):
+    start = STATS['start']
+    elapsed = time.perf_counter() - start
+    part = len(STATS['times'])
+    STATS['times'].append(elapsed)
+    print(f"Part {part} ({elapsed:.02f}: s)", value)
+
