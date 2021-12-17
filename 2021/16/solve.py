@@ -1,7 +1,3 @@
-import itertools
-import operator
-from functools import reduce
-
 from aoc import solution
 
 class BitStream:
