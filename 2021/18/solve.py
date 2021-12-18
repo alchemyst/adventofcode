@@ -4,9 +4,7 @@ import re
 from aoc import solution
 
 tokenre = re.compile(r'(,|\[|\]|[0-9]+)')
-superdebug = False
 debug = False
-
 
 def parse_ints(l):
     return [int(i) if i.isdigit() else i for i in l]
@@ -47,7 +45,6 @@ def explode(number):
         if levels == 5:  # explode
             reduced_number = number.copy()
 
-            if superdebug: print('Explode')
             left_value = c
             right_value = number[i + 2]
             # scan left
@@ -77,14 +74,9 @@ def explode(number):
 def split(number):
     reduced_number = number.copy()
     for i, c in enumerate(number):
-        if c == '[':
-            continue
-        if c == ']':
-            continue
-        if c == ',':
+        if c in set('[],'):
             continue
         if c >= 10:
-            if superdebug: print('Split')
             left_value = int(math.floor(c / 2))  # rounded down
             right_value = int(math.ceil(c / 2))  # rounded up
 
@@ -97,9 +89,6 @@ def split(number):
 
 
 def reduce(number):
-    if superdebug: print('Called with', display(number))
-    levels = 0
-
     exploded, new_number = explode(number)
     if exploded:
         return reduce(new_number)
@@ -112,14 +101,7 @@ def reduce(number):
 
 
 def add(left, right):
-    result = reduce(['[', *left, ',', *right, ']'])
-
-    # print('  ', display(left))
-    # print(' +', display(right))
-    # print(' =', display(result))
-    # print('')
-
-    return result
+    return reduce(['[', *left, ',', *right, ']'])
 
 
 def add_all(numbers):
@@ -140,28 +122,17 @@ def magnitude(number):
     return _magnitude(eval(display(number)))
 
 
-def check_example(example, solution):
-    assert display(add_all(parse_example(example))) == solution
-    print('Correct!')
-    print("")
-
-
 if __name__ == '__main__':
     filename = 'test.txt' if debug else 'input.txt'
 
     numbers = parse(filename)
-    result = add_all(numbers)
-    solution(magnitude(result))
+    # Part 1
+    solution(magnitude(add_all(numbers)))
 
-    biggest = 0
-
-    for a, b in itertools.product(numbers, repeat=2):
-        if a == b:
-            continue
-        for swap in (True, False):
-            result = add(b, a) if swap else add(a, b)
-            mag = magnitude(result)
-            if mag > biggest:
-                biggest = mag
-
+    # Part 2
+    biggest = max(
+        magnitude(add(b, a) if swap else add(a, b))
+        for a, b, swap in itertools.product(numbers, numbers, [True, False])
+        if a != b
+    )
     solution(biggest)
