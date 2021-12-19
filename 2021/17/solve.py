@@ -41,7 +41,7 @@ def plot_trajectory(positions):
 
 # scan possible x velocities:
 working_dx = []
-for dx0 in range(1, 1000):
+for dx0 in range(1, x2):
     x = 0
     dx = dx0
     working = False
