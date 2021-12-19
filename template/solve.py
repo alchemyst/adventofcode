@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+from aoc import solution
 
 debug = True
 filename = 'test.txt' if debug else 'input.txt'
@@ -6,4 +6,8 @@ filename = 'test.txt' if debug else 'input.txt'
 with open(filename) as f:
     lines = f.readlines()
 
-print(len(lines))
+# Part 1
+solution(len(lines))
+
+# Part 2
+solution('Dummy')
