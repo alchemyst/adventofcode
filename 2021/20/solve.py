@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 import numpy as np
-import rich
+from rich.progress import track
 from matplotlib import pyplot as plt
 
 from aoc import solution, print_board
@@ -110,8 +110,7 @@ image = Image(dict((loc, value) for loc, value in np.ndenumerate(rawimage) if va
 def apply_enhance(times):
     newimage = image.copy()
 
-    for i in range(times):
-        print(i)
+    for i in track(range(times)):
         newimage = newimage.apply(algorithm)
 
     return newimage
