@@ -11,6 +11,9 @@ chars = {
     '.': 0,
 }
 
+POWERS_OF_TWO = 2**np.arange(8, -1, -1)
+
+
 def readline(line):
     return list(map(chars.get, line.strip()))
 
@@ -26,8 +29,8 @@ def parse(filename):
 
 
 def lookup(values):
-    string = ''.join(str(int(value)) for value in values)
-    return algorithm[int(string, 2)]
+    position = int((POWERS_OF_TWO*values).sum())
+    return algorithm[position]
 
 
 def enhance(image, outside):
