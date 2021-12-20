@@ -27,5 +27,5 @@ def solution(value):
     elapsed = time.perf_counter() - start
     STATS['times'].append(elapsed)
     part = len(STATS['times'])
-    print(f"Part {part} ({elapsed:.02f}: s)", value)
+    print(f"Part {part} ({elapsed:.02f} s):", value)
 
