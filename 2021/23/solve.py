@@ -22,38 +22,6 @@ def parse(filename):
 
     return Board(rooms)
 
-GRAPH = nx.Graph()
-GRAPH.add_edges_from([
-    (0, 1),
-    (1, 2),
-
-    (2, 11),
-    (11, 12),
-    (2, 3),
-
-    (3, 4),
-
-    (4, 13),
-    (13, 14),
-    (4, 5),
-
-    (5, 6),
-
-    (6, 15),
-    (15, 16),
-    (6, 7),
-
-    (7, 8),
-
-    (8, 17),
-    (17, 18),
-
-    (8, 9),
-    (9, 10),
-])
-
-
-
 class Board:
     def __init__(self, rooms=None, hall=None):
         """
