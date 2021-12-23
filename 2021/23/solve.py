@@ -217,14 +217,14 @@ class Board:
 
 if __name__ == "__main__":
     board1 = parse('input.txt')
-    solved, energy, moves = board1.solve()
+    solved, energy, moves = board1.solve(maxlevel=20)
     assert solved
 
     solution(energy)
 
     SOLVE_CACHE.clear()
     board2 = parse('input2.txt')
-    solved, energy, moves = board2.solve()
+    solved, energy, moves = board2.solve(maxlevel=20)
     assert solved
 
     solution(energy)
