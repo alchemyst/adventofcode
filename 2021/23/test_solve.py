@@ -1,7 +1,9 @@
 import pytest
 
-from solve import Board
+import solve
+from solve import Board, Cache
 
+solve.CACHE = Cache(2)
 
 def test_solved():
     board = Board(

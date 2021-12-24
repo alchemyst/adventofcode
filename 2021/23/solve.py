@@ -11,7 +11,26 @@ LETTERS = 'ABCD'
 
 MOVE_ENERGY = dict(zip(LETTERS, [1, 10, 100, 1000]))
 
-SOLVE_CACHE = {}
+class Cache:
+    def __init__(self, roomsize):
+        self.roomsize = roomsize
+        self.solve_cache = {}
+        self.graph = nx.Graph()
+        self.build_graph()
+
+    def build_graph(self):
+        for i in range(10):
+            self.graph.add_edge(i, i + 1)
+
+        for room, roomtop in enumerate((2, 4, 6, 8)):
+            roomstart = 11 + room * self.roomsize
+            self.graph.add_edge(roomtop, roomstart)
+            for roomi in range(self.roomsize - 1):
+                self.graph.add_edge(roomstart + roomi, roomstart + roomi + 1)
+                
+    @cache
+    def path(self, a, b):
+        return nx.shortest_path(self.graph, a, b)
 
 def parse(filename):
     with open(filename) as f:
@@ -40,22 +59,6 @@ class Board:
         self.spaces = hall[:]
         for room in rooms:
             self.spaces += room
-
-        # build graph
-        self.graph = nx.Graph()
-
-        for i in range(10):
-            self.graph.add_edge(i, i+1)
-
-        for room, roomtop in enumerate((2, 4, 6, 8)):
-            roomstart = 11 + room*self.roomsize
-            self.graph.add_edge(roomtop, roomstart)
-            for roomi in range(self.roomsize-1):
-                self.graph.add_edge(roomstart + roomi, roomstart + roomi + 1)
-
-    @cache
-    def path(self, a, b):
-        return nx.shortest_path(self.graph, a, b)
 
     def copy(self):
         return Board(self.rooms(), self.hall())
@@ -97,13 +100,20 @@ class Board:
             # Amphipods will never move from the hallway into a room unless
             # that room is their destination room and that room contains no
             # amphipods which do not also have that room as their own destination.
-            target_room = int((b - 11)//self.roomsize)
+            target_room, target_position = divmod((b - 11), self.roomsize)
             if target_room != destination_room:
                 return False
 
             r = self.rooms()
-            if any(contents not in ('.', pod) for contents in r[target_room]):
+            room = r[target_room]
+            if any(contents not in ('.', pod) for contents in room):
                 return False
+
+            occupancy = room.count(pod) + 1
+            correct_position = self.roomsize - occupancy
+            if target_position != correct_position:
+                return False
+
         else:  # room to hallway
             if b in (2, 4, 6, 8):  # Can't stop at head of room
                 return False
@@ -164,10 +174,10 @@ class Board:
 
     def solve(self, level=0, maxlevel=None, energy_budget=None):
         if self.solved():
-            SOLVE_CACHE[self] = True, 0, []
+            CACHE.solve_cache[self] = True, 0, []
 
-        if self in SOLVE_CACHE:
-            return SOLVE_CACHE[self]
+        if self in CACHE.solve_cache:
+            return CACHE.solve_cache[self]
 
         if maxlevel and level > maxlevel:
             return False, None, []
@@ -189,7 +199,7 @@ class Board:
             solved, sub_energy, sub_moves = newboard.solve(level+1, maxlevel, sub_energy_budget)
 
             if solved:
-                SOLVE_CACHE[newboard] = solved, sub_energy, sub_moves
+                CACHE.solve_cache[newboard] = solved, sub_energy, sub_moves
                 total_energy = move_energy + sub_energy
                 # print('Solved with', total_energy)
                 if least_energy is None or total_energy < least_energy:
@@ -211,19 +221,23 @@ class Board:
                 board.show()
 
         return board, energy
+    
+    def path(self, a, b):
+        return CACHE.path(a, b)
 
     def __hash__(self):
         return hash(tuple(self.spaces))
 
 if __name__ == "__main__":
-    board1 = parse('input.txt')
+    board1 = parse('input2.txt')
+    CACHE = Cache(board1.roomsize)
     solved, energy, moves = board1.solve(maxlevel=20)
     assert solved
 
     solution(energy)
 
-    SOLVE_CACHE.clear()
     board2 = parse('input2.txt')
+    CACHE = Cache(board2.roomsize)
     solved, energy, moves = board2.solve(maxlevel=20)
     assert solved
 
