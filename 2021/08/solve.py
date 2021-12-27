@@ -1,10 +1,10 @@
-#!/usr/bin/env python
 from collections import defaultdict
 from functools import reduce
 
+from aoc import solution
+
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
-# filename = 'simpletest.txt'
 
 digits_to_segments = {
     '0': 'abcefg',
@@ -54,7 +54,7 @@ for unique_patterns, output_patterns in entries:
         if len(output_pattern) in easy_lengths:
             count += 1
             
-print('Part 1:', count)
+solution(count)
 
 
 # -
@@ -120,4 +120,4 @@ def decode(entry):
 
 all_numbers = [decode(entry) for entry in entries]
 
-print("Part 2:", sum(all_numbers))
+solution(sum(all_numbers))

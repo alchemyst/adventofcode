@@ -1,6 +1,8 @@
 import networkx as nx
 from collections import Counter
 
+from aoc import solution
+
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
@@ -33,6 +35,7 @@ def traverse(start, stop, pathsofar, valid):
 def valid_part_1(cave, pathsofar):
     return not (smallcave(cave) and cave in pathsofar)
 
+
 def valid_part_2(cave, pathsofar):
     if cave == 'start':
         return False
@@ -48,8 +51,6 @@ def valid_part_2(cave, pathsofar):
 
 graph = parse(filename)
 
-allpaths = list(traverse('start', 'end', ['start'], valid_part_1))
-print('Part 1:', len(allpaths))
-
-allpaths2 = list(traverse('start', 'end', ['start'], valid_part_2))
-print('Part 2:', len(allpaths2))
+for valid in (valid_part_1, valid_part_2):
+    allpaths = list(traverse('start', 'end', ['start'], valid))
+    solution(len(allpaths))

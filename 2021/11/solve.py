@@ -1,11 +1,10 @@
-import sys
-
 import numpy as np
 import scipy.signal as sps
 
+from aoc import solution
+
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
-# filename = 'smalltest.txt'
 
 board = []
 with open(filename) as f:
@@ -37,11 +36,12 @@ for i in range(steps):
         allflashed |= flashed
 
     if allflashed.all():
-        print('Part 2:', i+1)
+        # Part 2 - this assumes it happens after part 1
+        solution(i+1)
         break
 
     if i+1 == 100:
-        print('Part 1:', flashcount)
+        solution(flashcount)
 
     board[allflashed] = 0
     if debug:

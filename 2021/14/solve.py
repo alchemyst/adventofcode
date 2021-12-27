@@ -1,5 +1,7 @@
 from collections import Counter
 
+from aoc import solution
+
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
@@ -45,5 +47,5 @@ def solve(steps):
 template, rules = parse(filename)
 pair_rules = {tuple(rule): value for rule, value in rules.items()}
 
-print('Part 1:', solve(10))
-print('Part 2:', solve(40))
+solution(solve(10))
+solution(solve(40))

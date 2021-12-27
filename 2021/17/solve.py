@@ -1,7 +1,6 @@
 import itertools
 import re
 import numpy as np
-from matplotlib import pyplot as plt
 
 from aoc import solution
 
@@ -83,5 +82,3 @@ for dx, dy in itertools.product(working_dx, working_dy):
 
 solution(highest)
 solution(len(working_combos))
-
-# plt.show()

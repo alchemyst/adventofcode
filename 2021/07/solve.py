@@ -1,14 +1,13 @@
-#!/usr/bin/env python
+import numpy as np
+from scipy.optimize import minimize
+
+from aoc import solution
+
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
 with open(filename) as f:
     numbers = [int(s) for s in f.read().strip().split(',')]
-
-print(len(numbers))
-
-import numpy as np
-
 
 # # Part 1 - abs distance metric
 
@@ -16,12 +15,8 @@ def distance(x):
     return abs(np.array(numbers) - x).sum()
 
 
-from scipy.optimize import minimize
-
 sol = minimize(distance, np.mean(numbers))
-sol
-
-print("Part 1", distance(np.round(sol.x)))
+solution(distance(np.round(sol.x)))
 
 
 # +
@@ -37,19 +32,18 @@ def distance(x):
 
 
 sol = minimize(distance, np.mean(numbers))
-sol
 
-print("Part 2:", distance(np.round(sol.x)))
+solution(distance(np.round(sol.x)))
 
 # Initially I got the rounding wrong and thought my approach was wrong, so I brute forced it:
 
-x = np.arange(1, 500)
-
-tries = [(xi, distance(xi)) for xi in x]
-
-tries.sort(key=lambda i: i[1])
-
-tries[0]
+# x = np.arange(1, 500)
+#
+# tries = [(xi, distance(xi)) for xi in x]
+#
+# tries.sort(key=lambda i: i[1])
+#
+# tries[0]
 
 # After the fact realisation:
 # Part 1 is solved by the median (see https://math.stackexchange.com/questions/113270/the-median-minimizes-the-sum-of-absolute-deviations-the-ell-1-norm)

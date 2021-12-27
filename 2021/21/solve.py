@@ -4,7 +4,7 @@ from itertools import product
 
 from aoc import solution
 
-debug = True
+debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
 # parse
@@ -62,6 +62,4 @@ def play(starting_positions, starting_scores, player):
     return wins
 
 wins = play(starting_positions, (0, 0), 0)
-print(wins)
-
 solution(max(wins))

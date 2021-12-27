@@ -1,6 +1,6 @@
 import numpy as np
 import re
-from aoc import print_board
+from aoc import solution, print_board
 
 foldre = re.compile(r'fold along ([xy])=(\d+)')
 
@@ -75,7 +75,7 @@ newboard = dofold(board, direction, position)
 if debug:
     print()
     p(newboard)
-print('Part 1:', newboard.sum())
+solution(newboard.sum())
 
 # Part 2
 for direction, position in folds[1:]:

@@ -1,5 +1,5 @@
-#!/usr/bin/env python
 from collections import Counter
+from aoc import solution
 
 debug = False
 filename = 'input.txt' if debug else 'input.txt'
@@ -26,5 +26,5 @@ def solve(fishes, days):
     
     return sum(fishcounts.values())
 
-print("Part 1:", solve(fishes, 80))
-print("Part 2:", solve(fishes, 256))
+solution(solve(fishes, 80))
+solution(solve(fishes, 256))

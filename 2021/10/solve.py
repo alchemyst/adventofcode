@@ -1,4 +1,5 @@
 from statistics import median
+from aoc import solution
 
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
@@ -53,6 +54,6 @@ for line in lines:
         complete_scores.append(score)
 
 
-print("Part 1:", score)
+solution(score)
 
-print("Part 2:", median(complete_scores))
+solution(median(complete_scores))

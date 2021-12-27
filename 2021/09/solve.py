@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import ndimage
-from aoc import print_board
+from aoc import print_board, solution
 from collections import Counter
 
 debug = False
@@ -23,7 +23,7 @@ if debug:
 
 minimum_heights = heightmap[minima]
 risk_level = minimum_heights + 1
-print('Part 1:', sum(risk_level))
+solution(sum(risk_level))
 
 if debug:
     print_board(heightmap, heightmap < 9)
@@ -35,4 +35,4 @@ basincounts = Counter(labels[labels != 0].ravel())
 
 largest_basins = [size for basin, size in basincounts.most_common(3)]
 
-print('Part 2:', np.prod(largest_basins))
+solution(np.prod(largest_basins))
