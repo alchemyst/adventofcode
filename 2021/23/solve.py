@@ -103,7 +103,7 @@ class Board:
             # Another token is in the way
             return False
 
-        if a < 11 and b >= 11:  # hallway to room
+        if b >= 11:  # to room
             # Amphipods will never move from the hallway into a room unless
             # that room is their destination room and that room contains no
             # amphipods which do not also have that room as their own destination.
@@ -120,11 +120,11 @@ class Board:
             correct_position = self.roomsize - occupancy
             if target_position != correct_position:
                 return False
-
-        else:  # room to hallway
+        else:  # to hallway
             if b in (2, 4, 6, 8):  # Can't stop at head of room
                 return False
 
+        if a >= 11:  # from room
             # Don't move away from the right location
             location_room, location_position = divmod(a - 11, self.roomsize)
             if location_room == destination_room:
@@ -139,10 +139,15 @@ class Board:
     def valid_moves(self):
         moves = []
 
-        # room to room - didn't get this working right
-        # for roomi, roomj in product(range(11, 11 + 4*self.roomsize), repeat=2):
-        #     if roomi != roomj:
-        #         moves.append((roomi, roomj))
+        # room to room
+        for roomi, roomj in product(range(11, 11 + 4*self.roomsize), repeat=2):
+            if roomi != roomj:
+                move = (roomi, roomj)
+                if self.valid_move(move):
+                    moves.append(move)
+
+        if moves:
+            return moves[:1]
 
         # room to hallway, hallway to room
         for roomi in range(11, 11 + 4*self.roomsize):
@@ -150,6 +155,12 @@ class Board:
                 for move in ((roomi, halli), (halli, roomi)):
                     if self.valid_move(move):
                         moves.append(move)
+
+        # Heuristics - if stuff in the halway can go home, do it
+        home_moves = [(a, b) for (a, b) in moves if b >= 11]
+
+        if home_moves:
+            return home_moves[:1]
 
         return moves
 
@@ -200,19 +211,24 @@ class Board:
 
         moves = self.valid_moves()
 
-        for move in sorted(moves, key=self.move_energy):
+        if level == 0:
+            tracker = track
+        else:
+            tracker = lambda x: x
+
+        for move in tracker(moves):
             newboard, move_energy = self.board_with_move(move)
-            # if level <= 2:
-            #     print(' '*level, move)
-            #     newboard.show()
+            if level <= 2:
+                print(' '*level, move)
+                newboard.show()
 
             solved, sub_energy, sub_moves = newboard.solve(level+1)
             CACHE.solve_cache[newboard] = solved, sub_energy, sub_moves
 
             if solved:
                 total_energy = move_energy + sub_energy
-                # if level <= 1:
-                #     print(f'Solved with {total_energy=} {level=} {len(CACHE.solve_cache)=}')
+                if level == 0:
+                    print(f'Solved with {total_energy=} {level=} {len(CACHE.solve_cache)=}')
                 if least_energy is None or total_energy < least_energy:
                     least_energy = total_energy
                     best_moves = [move, *sub_moves]
@@ -228,7 +244,7 @@ class Board:
         energy = 0
         for i, move in enumerate(moves, 1):
             assert board.valid_move(move)
-            assert move in board.valid_moves()
+            # assert move in board.valid_moves()
             board, move_energy = board.board_with_move(move)
             energy += move_energy
             if show:
@@ -245,7 +261,7 @@ class Board:
 
 def random_search(starting_board):
     least_energy = None
-    for i in track(range(100000)):
+    for i in track(range(10000)):
         board = starting_board.copy()
         energy = 0
 
@@ -265,12 +281,12 @@ if __name__ == "__main__":
     # Turns out random search is really effective in this problem
     board1 = parse('input.txt')
     CACHE = Cache(board1.roomsize)
-
-    solution(random_search(board1))
-
-    board2 = parse('input2.txt')
-    CACHE = Cache(board2.roomsize)
-    solution(random_search(board2))
+    #
+    # solution(random_search(board1))
+    #
+    # board2 = parse('input2.txt')
+    # CACHE = Cache(board2.roomsize)
+    # solution(random_search(board2))
 
 
     solved, energy, moves = board1.solve()

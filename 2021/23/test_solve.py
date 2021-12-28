@@ -88,29 +88,29 @@ def test_example():
     assert final.solved()
     assert energy == 12521
 
-# def test_example_room_to_room():
-#     board = Board(
-#         [list(room) for room in ['BA', 'CD', 'BC', 'DA']]
-#     )
-#
-#     moves = (
-#         (15, 3),
-#         (13, 5),
-#         (5, 15),
-#         (14, 5),
-#         (3, 14),
-#         (11, 13),
-#         (17, 7),
-#         (18, 9),
-#         (7, 18),
-#         (5, 17),
-#         (9, 11),
-#     )
-#
-#     final, energy = board.apply_moves(moves)
-#
-#     assert final.solved()
-#     assert energy == 12521
+def test_example_room_to_room():
+    board = Board(
+        [list(room) for room in ['BA', 'CD', 'BC', 'DA']]
+    )
+
+    moves = (
+        (15, 3),
+        (13, 5),
+        (5, 15),
+        (14, 5),
+        (3, 14),
+        (11, 13),
+        (17, 7),
+        (18, 9),
+        (7, 18),
+        (5, 17),
+        (9, 11),
+    )
+
+    final, energy = board.apply_moves(moves)
+
+    assert final.solved()
+    assert energy == 12521
 
 def test_solver_simple1():
     board = Board(
