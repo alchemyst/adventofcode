@@ -1,7 +1,11 @@
+from collections import Counter
 from functools import cache
 from itertools import product
+import random
 
 import networkx as nx
+from rich.progress import track
+
 from aoc import solution
 
 debug = False
@@ -10,6 +14,7 @@ filename = 'test.txt' if debug else 'input.txt'
 LETTERS = 'ABCD'
 
 MOVE_ENERGY = dict(zip(LETTERS, [1, 10, 100, 1000]))
+
 
 class Cache:
     def __init__(self, roomsize):
@@ -32,6 +37,7 @@ class Cache:
     def path(self, a, b):
         return nx.shortest_path(self.graph, a, b)
 
+
 def parse(filename):
     with open(filename) as f:
         next(f)
@@ -40,6 +46,7 @@ def parse(filename):
     rooms = list(zip(*rows))
 
     return Board(rooms)
+
 
 class Board:
     def __init__(self, rooms=None, hall=None):
@@ -153,6 +160,15 @@ class Board:
         energy = MOVE_ENERGY[pod]*(len(route) - 1)
         return energy
 
+    def move_order(self, move):
+        a, b = move
+
+        if b >= 11:
+            return 0
+
+        else:
+            return len(self.path(a, b))
+
     def apply_move(self, move):
         a, b = move
         energy = self.move_energy(move)
@@ -172,40 +188,39 @@ class Board:
                 return False
         return True
 
-    def solve(self, level=0, maxlevel=None, energy_budget=None):
+    def solve(self, level=0):
         if self.solved():
             CACHE.solve_cache[self] = True, 0, []
 
         if self in CACHE.solve_cache:
             return CACHE.solve_cache[self]
 
-        if maxlevel and level > maxlevel:
-            return False, None, []
-
         least_energy = None
         best_moves = []
-        for move in self.valid_moves():
+
+        moves = self.valid_moves()
+
+        for move in sorted(moves, key=self.move_energy):
             newboard, move_energy = self.board_with_move(move)
-            if energy_budget and move_energy > energy_budget:
-                return False, least_energy, best_moves
+            # if level <= 2:
+            #     print(' '*level, move)
+            #     newboard.show()
 
-            if least_energy:
-                sub_energy_budget = least_energy - move_energy
-            elif energy_budget:
-                sub_energy_budget = energy_budget - move_energy
-            else:
-                sub_energy_budget = None
-
-            solved, sub_energy, sub_moves = newboard.solve(level+1, maxlevel, sub_energy_budget)
+            solved, sub_energy, sub_moves = newboard.solve(level+1)
+            CACHE.solve_cache[newboard] = solved, sub_energy, sub_moves
 
             if solved:
-                CACHE.solve_cache[newboard] = solved, sub_energy, sub_moves
                 total_energy = move_energy + sub_energy
-                # print('Solved with', total_energy)
+                # if level <= 1:
+                #     print(f'Solved with {total_energy=} {level=} {len(CACHE.solve_cache)=}')
                 if least_energy is None or total_energy < least_energy:
                     least_energy = total_energy
                     best_moves = [move, *sub_moves]
+                # Greedy
+                # return True, total_energy, best_moves
 
+
+        CACHE.solve_cache[self] = least_energy is not None, least_energy, best_moves
         return least_energy is not None, least_energy, best_moves
 
     def apply_moves(self, moves, show=False):
@@ -228,17 +243,42 @@ class Board:
     def __hash__(self):
         return hash(tuple(self.spaces))
 
+def random_search(starting_board):
+    least_energy = None
+    for i in track(range(100000)):
+        board = starting_board.copy()
+        energy = 0
+
+        while moves := board.valid_moves():
+            move = random.choice(moves)
+            energy += board.move_energy(move)
+            board.apply_move(move)
+
+        if board.solved() and (not least_energy or energy < least_energy):
+            least_energy = energy
+            print(energy)
+
+    return least_energy
+
+
 if __name__ == "__main__":
-    board1 = parse('input2.txt')
+    # Turns out random search is really effective in this problem
+    board1 = parse('input.txt')
     CACHE = Cache(board1.roomsize)
-    solved, energy, moves = board1.solve(maxlevel=20)
+
+    solution(random_search(board1))
+
+    board2 = parse('input2.txt')
+    CACHE = Cache(board2.roomsize)
+    solution(random_search(board2))
+
+
+    solved, energy, moves = board1.solve()
     assert solved
 
     solution(energy)
 
-    board2 = parse('input2.txt')
-    CACHE = Cache(board2.roomsize)
-    solved, energy, moves = board2.solve(maxlevel=20)
+    solved, energy, moves = board2.solve()
     assert solved
 
     solution(energy)

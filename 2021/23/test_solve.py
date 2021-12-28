@@ -36,6 +36,7 @@ def test_valid_moves():
 
     final, energy = board.apply_moves(moves)
 
+
 def test_invalid_moves():
     board = Board(
         [list(room) for room in ['AA', 'BB', '..', 'DD']],
@@ -132,5 +133,5 @@ def test_solver_simple3():
         [list(room) for room in ['DD', 'BB', 'CC', 'AA']],
     )
 
-    solved, energy, moves = board.solve(maxlevel=8)
+    solved, energy, moves = board.solve()
     assert solved
