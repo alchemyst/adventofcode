@@ -1,10 +1,9 @@
 import pathlib
-import pickle
-from itertools import product
-
-from rich.progress import track
+from functools import cache
 
 from aoc import solution
+
+VALID_DIGITS = list(range(1, 10))
 
 def get_instructions(instruction_str: str):
     return [line.strip().split() for line in instruction_str.splitlines() if line.strip()]
@@ -45,6 +44,10 @@ def process(instructions, inputs, invar=None):
 
     return var
 
+@cache
+def cached_process(part, digit, z):
+    return process(part, [digit], {'z': z})['z']
+
 def inp_parts(instruction_str):
     parts = []
     for line in instruction_str.splitlines():
@@ -52,16 +55,16 @@ def inp_parts(instruction_str):
         if line.startswith('inp'):
             part = []
             parts.append(part)
-        part.append(line.split())
+        part.append(tuple(line.split()))
 
-    return parts
+    return tuple(tuple(part) for part in parts)
 
 def verify_only_z(parts):
     # Check what we need to change in a part
     effects = []
     for part in parts:
         part_effects = set()
-        for digit in valid_digits:
+        for digit in VALID_DIGITS:
             basevalue = process(part, [digit])
             for changevar in 'xyz':
                 for changeval in range(-100, 100):
@@ -78,73 +81,50 @@ def verify_only_z(parts):
     # and a 'mul y 0' before y is ever used
 
     for part in parts:
-        assert part[1] == ['mul', 'x', '0']
+        assert part[1] == ('mul', 'x', '0')
         yreferenced = False
         for instruction in part:
             if instruction[-1] == 'y':
                 yreferenced = True
-            if instruction == ['mul', 'y', '0']:
+            if instruction == ('mul', 'y', '0'):
                 assert not yreferenced
                 break
     print("Verified only using z")
 
 
-def valid_forward(parts):
-    all_results = []
+def make_serial(parts, z, digits):
+    first, *rest = parts
 
-    # for the first part, z is always 0
-    possible_zs = {0}
+    level = 14 - len(parts)
 
-    for i, part in enumerate(parts, 1):
-        print(f'Working on part {i}')
-        part_results = {}
-        next_possible_zs = set()
-        total = len(valid_digits)*len(possible_zs)
-        for digit, z in track(product(valid_digits, possible_zs), total=total):
-            result = process(part, [digit], {'z': z})
-            next_possible_zs.add(result['z'])
-            part_results[(digit, z)] = result['z']
-        all_results.append(part_results)
-        possible_zs = next_possible_zs
-        print(f'{len(possible_zs)=} {max(possible_zs)=} {min(possible_zs)=}')
+    for digit in digits:
+        if level == 0:
+            print()
+            print(digit, '- ', end='')
+        if level == 1:
+            print(digit, end='')
 
-    return all_results
+        key = (digit, z, level)
+        if key in CACHE:
+            return CACHE[key]
 
-def determine_valid_combos(all_results):
-    #  figure out what combinations of (digit, z) leads to the
-    # right values at the end
-    targets = {0}
-    valid_combos = []
-    for i, part_results in enumerate(reversed(all_results)):
-        print(f'Doing part {i} from the back')
+        outz = cached_process(first, digit, z)
 
-        valid_inputs = {(ind, inz): outz for (ind, inz), outz in part_results.items() if outz in targets}
-        new_targets = {inz for (ind, inz) in valid_inputs}
-        print(f'{len(new_targets)=} {valid_inputs=}')
-        targets = new_targets
+        # last part - check sum
+        if not rest:
+            if outz == 0:
+                return [digit]
+            else:
+                continue
 
-        valid_combos.insert(0, valid_inputs)
+        remaining_serial = make_serial(rest, outz, digits)
+        CACHE[key] = remaining_serial
 
-    return valid_combos
-
-def make_serial(valid_combos, z=0, reverse=True):
-    first, *rest = valid_combos
-
-    sorted_options = sorted(first.items(), reverse=reverse)
-    valid_options = [((ind, inz), outz) for (ind, inz), outz in sorted_options if inz == z]
-
-    if not valid_options:
-        return None
-
-    if not rest:
-        return [valid_options[0][0][0]]
-
-    for (ind, inz), outz in sorted_options:
-        remaining_serial = make_serial(rest, outz, reverse=reverse)
         if not remaining_serial:
             continue
 
-        return [ind] + remaining_serial
+        return [digit] + remaining_serial
+
 
 if __name__ == "__main__":
     all_results_cache = pathlib.Path('all_results.pickle')
@@ -152,27 +132,19 @@ if __name__ == "__main__":
     instructions = get_instructions(instruction_str)
 
     parts = inp_parts(instruction_str)
-    valid_digits = range(1, 10)
 
     verify_only_z(parts)
 
+    CACHE = {}
+
     # So, we proceed by only using 'z' as a changeable input
-    if all_results_cache.exists():
-        print("Found cache - reading...")
-        with all_results_cache.open('rb') as f:
-            all_results = pickle.load(f)
-        print('Read from cache')
-    else:
-        all_results = valid_forward(parts)
-        with all_results_cache.open('wb') as f:
-            pickle.dump(all_results, f)
-        print('Wrote to cache')
-
-    valid_combos = determine_valid_combos(all_results)
-
-    part_1_serial = make_serial(valid_combos, z=0, reverse=True)
+    part_1_serial = make_serial(parts, 0, VALID_DIGITS[::-1])
+    print()
     solution(''.join(str(d) for d in part_1_serial))
 
     # Part 2
-    part_2_serial = make_serial(valid_combos, z=0, reverse=False)
+    # Scrub cached "working" values but retain knowledge about invalid combos
+    CACHE = {key: value for key, value in CACHE.items() if not value}
+    part_2_serial = make_serial(parts, 0, VALID_DIGITS)
+    print()
     solution(''.join(str(d) for d in part_2_serial))
