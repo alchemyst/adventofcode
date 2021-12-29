@@ -180,15 +180,6 @@ class Board:
         energy = MOVE_ENERGY[pod] * (len(route) - 1)
         return energy
 
-    def move_order(self, move):
-        a, b = move
-
-        if b >= 11:
-            return 0
-
-        else:
-            return len(self.path(a, b))
-
     def symmetric_board(self):
         symm = dict(zip(LETTERS, reversed(LETTERS)))
         symm['.'] = '.'
@@ -197,7 +188,6 @@ class Board:
         rooms = [tuple(symm[c] for c in r) for r in reversed(self.rooms())]
 
         return Board(hall, rooms)
-
 
     def apply_move(self, move):
         a, b = move
@@ -298,26 +288,10 @@ class Board:
         return self.spaces == other.spaces
 
 
-def random_search(starting_board):
-    least_energy = None
-    for i in track(range(100000)):
-        board = starting_board.copy()
-        energy = 0
-
-        while moves := board.valid_moves():
-            move = random.choice(moves)
-            energy += board.move_energy(move)
-            board.apply_move(move)
-
-        if board.solved() and (not least_energy or energy < least_energy):
-            least_energy = energy
-            print(energy)
-
-    return least_energy
-
-
 def dijkstra(start):
     """
+    Based on
+
     procedure uniform_cost_search(start) is
         node ← start
         frontier ← priority queue containing node only
@@ -335,15 +309,17 @@ def dijkstra(start):
                 else if n is in frontier with higher cost
                     replace existing node with n
     """
-    frontier = [(0, start)]
+    frontier = {start: 0}
     explored = set()
 
     while True:
         if not frontier:
             raise Exception("No solution!")
 
-        energy, board = heapq.heappop(frontier)
-        if len(explored) % 1000 == 0:
+        board = min(frontier, key=frontier.get)
+        energy = frontier.pop(board)
+
+        if len(explored) % 10000 == 0:
             print(f'{energy=} {len(explored)=} {len(frontier)=}')
         if board.solved():
             return energy
@@ -352,25 +328,39 @@ def dijkstra(start):
 
         for move in board.valid_moves():
             new_board, move_energy = board.board_with_move(move)
-            if new_board in explored:
-                # print("YES!")
-                continue
-            # not implemented - don't add to frontier if already there
-            heapq.heappush(frontier, (move_energy + energy, new_board))
+            total_energy = move_energy + energy
+
+            unknown = (new_board not in explored and new_board not in frontier)
+            better = (new_board in frontier and frontier[new_board] > total_energy)
+
+            if new_board.unsolvable():
+                explored.add(new_board)
+                explored.add(new_board.symmetric_board())
+            elif unknown or better:
+                frontier[new_board] = total_energy
 
 
 if __name__ == "__main__":
+    # algorithm = 'dijkstra'
+    algorithm = 'bfs'
+
     board1 = parse("input.txt")
     board2 = parse('input2.txt')
 
     CACHE = Cache(board1.roomsize)
-    solved, energy, moves = board1.solve()
-    assert solved
+    if algorithm == 'dijkstra':
+        energy = dijkstra(board1)
+    else:
+        solved, energy, moves = board1.solve()
+        assert solved
 
     solution(energy)
 
     CACHE = Cache(board2.roomsize)
-    solved, energy, moves = board2.solve()
-    assert solved
+    if algorithm == 'dijkstra':
+        energy = dijkstra(board2)
+    else:
+        solved, energy, moves = board2.solve()
+        assert solved
 
     solution(energy)
