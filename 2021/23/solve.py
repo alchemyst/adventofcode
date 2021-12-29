@@ -1,5 +1,5 @@
 # import pyjion; pyjion.enable()
-
+import heapq
 from functools import cache
 from itertools import product
 import random
@@ -73,6 +73,9 @@ class Board:
         for room in rooms:
             self.spaces += room
 
+    def __lt__(self, other):
+        return self.spaces < other.spaces
+
     def copy(self):
         return Board(self.rooms(), self.hall())
 
@@ -143,30 +146,30 @@ class Board:
         return True
 
     def valid_moves(self):
-        moves = []
+        moves = set()
 
         # room to room
         for roomi, roomj in product(range(11, 11 + 4 * self.roomsize), repeat=2):
-            if roomi != roomj:
+            if roomi < roomj:
                 move = (roomi, roomj)
                 if self.valid_move(move):
-                    moves.append(move)
+                    moves.add(move)
 
         if moves:
-            return moves[:1]
+            return moves
 
         # room to hallway, hallway to room
         for roomi in range(11, 11 + 4 * self.roomsize):
             for halli in range(11):
                 for move in ((roomi, halli), (halli, roomi)):
                     if self.valid_move(move):
-                        moves.append(move)
+                        moves.add(move)
 
-        # Heuristics - if stuff in the halway can go home, do it
-        home_moves = [(a, b) for (a, b) in moves if b >= 11]
+        # Heuristics - if stuff in the hallway can go home, do it
+        home_moves = {(a, b) for (a, b) in moves if b >= 11}
 
         if home_moves:
-            return home_moves[:1]
+            return home_moves
 
         return moves
 
@@ -253,9 +256,6 @@ class Board:
 
         for move in tracker(moves):
             newboard, move_energy = self.board_with_move(move)
-            if level < 1:
-                print(" " * level, move)
-                newboard.show()
 
             solved, sub_energy, sub_moves = newboard.solve(level + 1)
             CACHE.solve_cache[newboard] = solved, sub_energy, sub_moves
@@ -263,11 +263,6 @@ class Board:
             if solved:
                 CACHE.solves += 1
                 total_energy = move_energy + sub_energy
-                if level <= 2:
-                    print(
-                        f"Solved with {total_energy=} {level=} {len(CACHE.solve_cache)=}"
-                    )
-                    print("Solves per second:", CACHE.sps())
                 if least_energy is None or total_energy < least_energy:
                     least_energy = total_energy
                     best_moves = [move, *sub_moves]
@@ -299,10 +294,13 @@ class Board:
     def __hash__(self):
         return hash(tuple(self.spaces))
 
+    def __eq__(self, other):
+        return self.spaces == other.spaces
+
 
 def random_search(starting_board):
     least_energy = None
-    for i in track(range(15000)):
+    for i in track(range(100000)):
         board = starting_board.copy()
         energy = 0
 
@@ -318,22 +316,60 @@ def random_search(starting_board):
     return least_energy
 
 
+def dijkstra(start):
+    """
+    procedure uniform_cost_search(start) is
+        node ← start
+        frontier ← priority queue containing node only
+        explored ← empty set
+        do
+            if frontier is empty then
+                return failure
+            node ← frontier.pop()
+            if node is a goal state then
+                return solution(node)
+            explored.add(node)
+            for each of node's neighbors n do
+                if n is not in explored and not in frontier then
+                    frontier.add(n)
+                else if n is in frontier with higher cost
+                    replace existing node with n
+    """
+    frontier = [(0, start)]
+    explored = set()
+
+    while True:
+        if not frontier:
+            raise Exception("No solution!")
+
+        energy, board = heapq.heappop(frontier)
+        if len(explored) % 1000 == 0:
+            print(f'{energy=} {len(explored)=} {len(frontier)=}')
+        if board.solved():
+            return energy
+
+        explored.add(board)
+
+        for move in board.valid_moves():
+            new_board, move_energy = board.board_with_move(move)
+            if new_board in explored:
+                # print("YES!")
+                continue
+            # not implemented - don't add to frontier if already there
+            heapq.heappush(frontier, (move_energy + energy, new_board))
+
+
 if __name__ == "__main__":
     board1 = parse("input.txt")
     board2 = parse('input2.txt')
-    CACHE = Cache(board1.roomsize)
-    # Turns out random search is really effective in this problem
 
-    solution(random_search(board1))
+    CACHE = Cache(board1.roomsize)
+    solved, energy, moves = board1.solve()
+    assert solved
+
+    solution(energy)
 
     CACHE = Cache(board2.roomsize)
-    # solution(random_search(board2))
-
-    # solved, energy, moves = board1.solve()
-    # assert solved
-    #
-    # solution(energy)
-    #
     solved, energy, moves = board2.solve()
     assert solved
 
