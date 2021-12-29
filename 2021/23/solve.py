@@ -1,7 +1,9 @@
-from collections import Counter
+# import pyjion; pyjion.enable()
+
 from functools import cache
 from itertools import product
 import random
+import time
 
 import networkx as nx
 from rich.progress import track
@@ -22,6 +24,8 @@ class Cache:
         self.solve_cache = {}
         self.graph = nx.Graph()
         self.build_graph()
+        self.solves = 0
+        self.starttime = time.perf_counter()
 
     def build_graph(self):
         for i in range(10):
@@ -37,6 +41,8 @@ class Cache:
     def path(self, a, b):
         return nx.shortest_path(self.graph, a, b)
 
+    def sps(self):
+        return self.solves/(time.perf_counter() - self.starttime)
 
 def parse(filename):
     with open(filename) as f:
@@ -180,6 +186,16 @@ class Board:
         else:
             return len(self.path(a, b))
 
+    def symmetric_board(self):
+        symm = dict(zip(LETTERS, reversed(LETTERS)))
+        symm['.'] = '.'
+
+        hall = [symm[c] for c in reversed(self.hall())]
+        rooms = [tuple(symm[c] for c in r) for r in reversed(self.rooms())]
+
+        return Board(hall, rooms)
+
+
     def apply_move(self, move):
         a, b = move
         energy = self.move_energy(move)
@@ -199,9 +215,28 @@ class Board:
                 return False
         return True
 
+    def unsolvable(self):
+        situations = (
+            (('A', 5), ('D', 3)),
+            (('A', 7), ('D', 3)),
+            (('A', 7), ('D', 5)),
+            (('A', 5), ('C', 3)),
+            (('B', 7), ('D', 5)),
+        )
+
+        for situation in situations:
+            if all(self.spaces[pos] == letter for letter, pos in situation):
+                return True
+
+        return False
+
     def solve(self, level=0):
         if self.solved():
             CACHE.solve_cache[self] = True, 0, []
+
+        if self.unsolvable():
+            CACHE.solve_cache[self] = False, None, None
+            CACHE.solve_cache[self.symmetric_board()] = False, None, None
 
         if self in CACHE.solve_cache:
             return CACHE.solve_cache[self]
@@ -218,7 +253,7 @@ class Board:
 
         for move in tracker(moves):
             newboard, move_energy = self.board_with_move(move)
-            if level <= 2:
+            if level < 1:
                 print(" " * level, move)
                 newboard.show()
 
@@ -226,16 +261,20 @@ class Board:
             CACHE.solve_cache[newboard] = solved, sub_energy, sub_moves
 
             if solved:
+                CACHE.solves += 1
                 total_energy = move_energy + sub_energy
-                if level == 0:
+                if level <= 2:
                     print(
                         f"Solved with {total_energy=} {level=} {len(CACHE.solve_cache)=}"
                     )
+                    print("Solves per second:", CACHE.sps())
                 if least_energy is None or total_energy < least_energy:
                     least_energy = total_energy
                     best_moves = [move, *sub_moves]
                 # Greedy
                 # return True, total_energy, best_moves
+            else:
+                CACHE.solve_cache[self.symmetric_board()] = False, None, None
 
         CACHE.solve_cache[self] = least_energy is not None, least_energy, best_moves
         return least_energy is not None, least_energy, best_moves
@@ -263,7 +302,7 @@ class Board:
 
 def random_search(starting_board):
     least_energy = None
-    for i in track(range(10000)):
+    for i in track(range(15000)):
         board = starting_board.copy()
         energy = 0
 
@@ -280,21 +319,21 @@ def random_search(starting_board):
 
 
 if __name__ == "__main__":
-    # Turns out random search is really effective in this problem
     board1 = parse("input.txt")
+    board2 = parse('input2.txt')
     CACHE = Cache(board1.roomsize)
-    #
-    # solution(random_search(board1))
-    #
-    # board2 = parse('input2.txt')
-    # CACHE = Cache(board2.roomsize)
+    # Turns out random search is really effective in this problem
+
+    solution(random_search(board1))
+
+    CACHE = Cache(board2.roomsize)
     # solution(random_search(board2))
 
-    solved, energy, moves = board1.solve()
-    assert solved
-
-    solution(energy)
-
+    # solved, energy, moves = board1.solve()
+    # assert solved
+    #
+    # solution(energy)
+    #
     solved, energy, moves = board2.solve()
     assert solved
 
