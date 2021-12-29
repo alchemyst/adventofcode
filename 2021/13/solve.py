@@ -2,14 +2,14 @@ import numpy as np
 import re
 from aoc import solution, print_board
 
-foldre = re.compile(r'fold along ([xy])=(\d+)')
+foldre = re.compile(r"fold along ([xy])=(\d+)")
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 
 def p(board):
-    print_board(board, lookup={0: '.', 1: '#'}, type='s')
+    print_board(board, lookup={0: ".", 1: "#"}, type="s")
 
 
 def parse(filename):
@@ -21,31 +21,31 @@ def parse(filename):
             line = line.strip()
             if not line:
                 continue
-            if ',' in line:
-                x, y = map(int, line.split(','))
+            if "," in line:
+                x, y = map(int, line.split(","))
                 xs.append(x)
                 ys.append(y)
-            if 'fold' in line:
+            if "fold" in line:
                 m = foldre.match(line)
                 direction, pos = m.groups()
                 pos = int(pos)
                 folds.append([direction, pos])
 
-    board = np.zeros((max(ys)+1, max(xs)+1), dtype=int)
+    board = np.zeros((max(ys) + 1, max(xs) + 1), dtype=int)
     board[ys, xs] = 1
 
     return board, folds
 
 
 def foldud(board, position):
-    top, bottom = board[0:position], board[position+1:]
+    top, bottom = board[0:position], board[position + 1 :]
     width = board.shape[1]
     topheight = top.shape[0]
     bottomheight = bottom.shape[0]
     if debug:
         print("Proposed fold:")
         p(top)
-        print('-'*width)
+        print("-" * width)
         p(bottom)
     height = max(topheight, bottomheight)
     newboard = np.zeros((height, width), dtype=int)
@@ -59,16 +59,17 @@ def foldud(board, position):
 
 
 def dofold(board, direction, position):
-    if direction == 'y':
+    if direction == "y":
         return foldud(board, position)
     else:
         return foldud(board.T, position).T
+
 
 board, folds = parse(filename)
 
 # Part 1
 if debug:
-    print('Board')
+    print("Board")
     p(board)
 direction, position = folds[0]
 newboard = dofold(board, direction, position)
@@ -82,4 +83,4 @@ for direction, position in folds[1:]:
     newboard = dofold(newboard, direction, position)
 
 print("Part 2:")
-print_board(newboard, lookup={1: '█', 0: ' '}, type='s')
+print_board(newboard, lookup={1: "█", 0: " "}, type="s")

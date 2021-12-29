@@ -3,7 +3,8 @@ import numpy as np
 from aoc import print_board, solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
+
 
 def parse(filename):
     data = []
@@ -55,10 +56,7 @@ def solve(board):
 
     start, end = (0, 0), (maxi - 1, maxj - 1)
 
-    shortest = networkx.shortest_path(
-        graph, start, end,
-        weight='cost',
-    )
+    shortest = networkx.shortest_path(graph, start, end, weight="cost",)
 
     i, j = zip(*shortest)
     cost = board[i, j].sum() - board[0, 0]
@@ -68,6 +66,7 @@ def solve(board):
 
     return cost
 
+
 #  part 1
 board = parse(filename)
 solution(solve(board))
@@ -75,7 +74,7 @@ solution(solve(board))
 # Part 2
 ii, jj = np.meshgrid(range(5), range(5))
 shape = ii + jj
-bigboard = (np.tile(board, (5, 5)) + np.kron(shape, np.ones_like(board)))
+bigboard = np.tile(board, (5, 5)) + np.kron(shape, np.ones_like(board))
 bigboard[bigboard > 9] -= 9
 bigboard[bigboard > 9] -= 9
 

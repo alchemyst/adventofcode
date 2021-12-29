@@ -5,7 +5,7 @@ import numpy as np
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 scanners = []
 
@@ -16,12 +16,12 @@ with open(filename) as f:
         if not line:
             continue
 
-        if line.startswith('--'):
+        if line.startswith("--"):
             scanner = []
             scanners.append(scanner)
             continue
 
-        scanner.append([int(n) for n in line.split(',')])
+        scanner.append([int(n) for n in line.split(",")])
 
 scanners = [np.array(scanner) for scanner in scanners]
 
@@ -60,7 +60,7 @@ def overlaps(apoints, bb):
 allpoints = unique_points(scanners.pop(0))
 deltas = []
 while scanners:
-    print('Scanners to go:', len(scanners))
+    print("Scanners to go:", len(scanners))
     scanner = scanners.pop(0)
     does_overlap, delta, upoints = overlaps(allpoints, scanner)
     if not does_overlap:

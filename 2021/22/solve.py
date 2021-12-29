@@ -2,7 +2,8 @@ from box import Box
 from aoc import solution
 
 debug = False
-filename = 'test2.txt' if debug else 'input.txt'
+filename = "test2.txt" if debug else "input.txt"
+
 
 def parse(filename):
     instructions = []
@@ -11,9 +12,9 @@ def parse(filename):
             line = line.strip()
             onoff, rest = line.split(maxsplit=1)
             numbers = []
-            for pair in rest.split(','):
-                rhs = pair.split('=')[1]
-                parts = rhs.split('..')
+            for pair in rest.split(","):
+                rhs = pair.split("=")[1]
+                parts = rhs.split("..")
                 numbers += [int(p) for p in parts]
 
             instruction = (onoff, *numbers)
@@ -21,7 +22,7 @@ def parse(filename):
 
     # Convert to numbers and coordinates
     instructions = [
-        (1 if onoff == 'on' else 0, xmin, xmax + 1, ymin, ymax + 1, zmin, zmax + 1)
+        (1 if onoff == "on" else 0, xmin, xmax + 1, ymin, ymax + 1, zmin, zmax + 1)
         for onoff, xmin, xmax, ymin, ymax, zmin, zmax in instructions
     ]
 

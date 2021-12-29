@@ -3,14 +3,14 @@ from collections import Counter
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 
 def parse(filename):
     with open(filename) as f:
         template = next(f).strip()
         next(f)
-        rules = dict(line.strip().split(' -> ') for line in f)
+        rules = dict(line.strip().split(" -> ") for line in f)
     return template, rules
 
 

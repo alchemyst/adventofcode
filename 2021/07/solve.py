@@ -4,12 +4,13 @@ from scipy.optimize import minimize
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 with open(filename) as f:
-    numbers = [int(s) for s in f.read().strip().split(',')]
+    numbers = [int(s) for s in f.read().strip().split(",")]
 
 # # Part 1 - abs distance metric
+
 
 def distance(x):
     return abs(np.array(numbers) - x).sum()
@@ -23,8 +24,9 @@ solution(distance(np.round(sol.x)))
 # Part 2 - quadratic cost + abs
 # -
 
+
 def cost(x):
-    return (x**2 + x)/2
+    return (x ** 2 + x) / 2
 
 
 def distance(x):

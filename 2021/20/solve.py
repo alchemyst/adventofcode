@@ -4,14 +4,14 @@ from rich.progress import track
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 chars = {
-    '#': 1,
-    '.': 0,
+    "#": 1,
+    ".": 0,
 }
 
-POWERS_OF_TWO = 2**np.arange(8, -1, -1)
+POWERS_OF_TWO = 2 ** np.arange(8, -1, -1)
 
 
 def readline(line):
@@ -29,18 +29,18 @@ def parse(filename):
 
 
 def lookup(values):
-    position = int((POWERS_OF_TWO*values).sum())
+    position = int((POWERS_OF_TWO * values).sum())
     return algorithm[position]
 
 
 def enhance(image, outside):
-    return ndimage.generic_filter(image, lookup, size=3, mode='constant', cval=outside)
+    return ndimage.generic_filter(image, lookup, size=3, mode="constant", cval=outside)
 
 
 def apply_enhance(times):
-    newimage = np.pad(image, times*2)
+    newimage = np.pad(image, times * 2)
 
-    for i in track(range(times), description='Enhancing'):
+    for i in track(range(times), description="Enhancing"):
         newimage = enhance(newimage, outside=0)
 
     return newimage[times:-times, times:-times]

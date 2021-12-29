@@ -5,13 +5,14 @@ import numpy as np
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
-number = re.compile(r'(-?[0-9]+)')
+number = re.compile(r"(-?[0-9]+)")
 
 with open(filename) as f:
     line = f.read().strip()
     x1, x2, y1, y2 = [int(n) for n in number.findall(line)]
+
 
 def fire(x0, dx0):
     x = np.asarray(x0)
@@ -33,10 +34,12 @@ def fire(x0, dx0):
 
     return np.array(positions), in_box
 
+
 def plot_trajectory(positions):
-    plt.plot(0, 0, 'o')
-    plt.plot(positions[:, 0], positions[:, 1], '*')
+    plt.plot(0, 0, "o")
+    plt.plot(positions[:, 0], positions[:, 1], "*")
     plt.plot([x1, x1, x2, x2, x1], [y1, y2, y2, y1, y1])
+
 
 # scan possible x velocities:
 working_dx = []
@@ -56,7 +59,7 @@ for dx0 in range(1, x2):
 
 # scan possible y velocities:
 working_dy = []
-for dy0 in range(y1-1, 1000):
+for dy0 in range(y1 - 1, 1000):
     y = 0
     dy = dy0
     working = False

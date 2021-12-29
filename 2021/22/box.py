@@ -14,6 +14,7 @@ def range_overlap(afrom, ato, bfrom, bto):
     else:
         return None
 
+
 @dataclass
 class Box:
     xmin: int
@@ -42,19 +43,21 @@ class Box:
         return not any(other.contains(v) for v in self.vertices())
 
     def size(self):
-        return (self.xmax - self.xmin) * (self.ymax - self.ymin) * (self.zmax - self.zmin)
+        return (
+            (self.xmax - self.xmin) * (self.ymax - self.ymin) * (self.zmax - self.zmin)
+        )
 
     def cut(self, position, axis):
         coords = self.coords()
-        minpos, maxpos = coords[axis*2:axis*2+2]
+        minpos, maxpos = coords[axis * 2 : axis * 2 + 2]
         if minpos < position < maxpos:
             boxes = []
             newcoords = list(coords)
-            newcoords[axis*2] = position
+            newcoords[axis * 2] = position
             boxes.append(Box(*newcoords))
 
             newcoords = list(coords)
-            newcoords[axis*2+1] = position
+            newcoords[axis * 2 + 1] = position
             boxes.append(Box(*newcoords))
 
             return boxes
@@ -68,7 +71,7 @@ class Box:
         all_parts = [self]
         for axis in range(3):
             for positioni in range(2):
-                position = coords[axis*2 + positioni]
+                position = coords[axis * 2 + positioni]
                 new_parts = []
                 for box in all_parts:
                     for new_box in box.cut(position, axis):

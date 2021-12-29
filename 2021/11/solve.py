@@ -4,7 +4,7 @@ import scipy.signal as sps
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 board = []
 with open(filename) as f:
@@ -32,22 +32,21 @@ for i in range(steps):
         flashcount += flashed_this_round
         if flashed_this_round == 0:
             break
-        board += sps.convolve2d(flashed, flashmask, 'same').astype(int)
+        board += sps.convolve2d(flashed, flashmask, "same").astype(int)
         allflashed |= flashed
 
     if allflashed.all():
         # Part 2 - this assumes it happens after part 1
-        solution(i+1)
+        solution(i + 1)
         break
 
-    if i+1 == 100:
+    if i + 1 == 100:
         solution(flashcount)
 
     board[allflashed] = 0
     if debug:
-        print('After step', i+1)
+        print("After step", i + 1)
         print(board)
 
 if debug:
     print(board)
-

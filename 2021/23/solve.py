@@ -9,9 +9,9 @@ from rich.progress import track
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
-LETTERS = 'ABCD'
+LETTERS = "ABCD"
 
 MOVE_ENERGY = dict(zip(LETTERS, [1, 10, 100, 1000]))
 
@@ -32,7 +32,7 @@ class Cache:
             self.graph.add_edge(roomtop, roomstart)
             for roomi in range(self.roomsize - 1):
                 self.graph.add_edge(roomstart + roomi, roomstart + roomi + 1)
-                
+
     @cache
     def path(self, a, b):
         return nx.shortest_path(self.graph, a, b)
@@ -56,10 +56,10 @@ class Board:
         :param hall:
         """
         if hall is None:
-            hall = ['.']*11
+            hall = ["."] * 11
 
         if rooms is None:
-            rooms = [['.', '.']]*4
+            rooms = [[".", "."]] * 4
 
         self.roomsize = len(rooms[0])
 
@@ -72,34 +72,34 @@ class Board:
 
     def rooms(self):
         n = self.roomsize
-        return [self.spaces[11 + i * n:11 + i * n + n] for i in range(4)]
+        return [self.spaces[11 + i * n : 11 + i * n + n] for i in range(4)]
 
     def hall(self):
         return self.spaces[:11]
 
     def show(self):
-        print("#"*13)
-        hallstr = ''.join(['#', *self.hall(), '#'])
+        print("#" * 13)
+        hallstr = "".join(["#", *self.hall(), "#"])
         r = self.rooms()
         print(hallstr)
         print(f"###{r[0][0]}#{r[1][0]}#{r[2][0]}#{r[3][0]}###")
         for i in range(1, self.roomsize):
             print(f"  #{r[0][i]}#{r[1][i]}#{r[2][i]}#{r[3][i]}#")
-        print('  #########')
+        print("  #########")
 
     def valid_move(self, move):
         a, b = move
         s = self.spaces
 
         pod = s[a]
-        if pod == '.':
+        if pod == ".":
             # not moving an amphipod
             return False
 
         destination_room = LETTERS.index(pod)
 
         pp = self.path(a, b)
-        if any(s[p] != '.' for p in pp[1:]):
+        if any(s[p] != "." for p in pp[1:]):
             # Another token is in the way
             return False
 
@@ -113,7 +113,7 @@ class Board:
 
             r = self.rooms()
             room = r[target_room]
-            if any(contents not in ('.', pod) for contents in room):
+            if any(contents not in (".", pod) for contents in room):
                 return False
 
             occupancy = room.count(pod) + 1
@@ -140,7 +140,7 @@ class Board:
         moves = []
 
         # room to room
-        for roomi, roomj in product(range(11, 11 + 4*self.roomsize), repeat=2):
+        for roomi, roomj in product(range(11, 11 + 4 * self.roomsize), repeat=2):
             if roomi != roomj:
                 move = (roomi, roomj)
                 if self.valid_move(move):
@@ -150,7 +150,7 @@ class Board:
             return moves[:1]
 
         # room to hallway, hallway to room
-        for roomi in range(11, 11 + 4*self.roomsize):
+        for roomi in range(11, 11 + 4 * self.roomsize):
             for halli in range(11):
                 for move in ((roomi, halli), (halli, roomi)):
                     if self.valid_move(move):
@@ -168,7 +168,7 @@ class Board:
         a, b = move
         pod = self.spaces[a]
         route = self.path(a, b)
-        energy = MOVE_ENERGY[pod]*(len(route) - 1)
+        energy = MOVE_ENERGY[pod] * (len(route) - 1)
         return energy
 
     def move_order(self, move):
@@ -185,7 +185,7 @@ class Board:
         energy = self.move_energy(move)
         pod = self.spaces[a]
         self.spaces[b] = pod
-        self.spaces[a] = '.'
+        self.spaces[a] = "."
         return energy
 
     def board_with_move(self, move):
@@ -219,22 +219,23 @@ class Board:
         for move in tracker(moves):
             newboard, move_energy = self.board_with_move(move)
             if level <= 2:
-                print(' '*level, move)
+                print(" " * level, move)
                 newboard.show()
 
-            solved, sub_energy, sub_moves = newboard.solve(level+1)
+            solved, sub_energy, sub_moves = newboard.solve(level + 1)
             CACHE.solve_cache[newboard] = solved, sub_energy, sub_moves
 
             if solved:
                 total_energy = move_energy + sub_energy
                 if level == 0:
-                    print(f'Solved with {total_energy=} {level=} {len(CACHE.solve_cache)=}')
+                    print(
+                        f"Solved with {total_energy=} {level=} {len(CACHE.solve_cache)=}"
+                    )
                 if least_energy is None or total_energy < least_energy:
                     least_energy = total_energy
                     best_moves = [move, *sub_moves]
                 # Greedy
                 # return True, total_energy, best_moves
-
 
         CACHE.solve_cache[self] = least_energy is not None, least_energy, best_moves
         return least_energy is not None, least_energy, best_moves
@@ -248,16 +249,17 @@ class Board:
             board, move_energy = board.board_with_move(move)
             energy += move_energy
             if show:
-                print(f'Move {i}')
+                print(f"Move {i}")
                 board.show()
 
         return board, energy
-    
+
     def path(self, a, b):
         return CACHE.path(a, b)
 
     def __hash__(self):
         return hash(tuple(self.spaces))
+
 
 def random_search(starting_board):
     least_energy = None
@@ -279,7 +281,7 @@ def random_search(starting_board):
 
 if __name__ == "__main__":
     # Turns out random search is really effective in this problem
-    board1 = parse('input.txt')
+    board1 = parse("input.txt")
     CACHE = Cache(board1.roomsize)
     #
     # solution(random_search(board1))
@@ -287,7 +289,6 @@ if __name__ == "__main__":
     # board2 = parse('input2.txt')
     # CACHE = Cache(board2.roomsize)
     # solution(random_search(board2))
-
 
     solved, energy, moves = board1.solve()
     assert solved

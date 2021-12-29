@@ -4,19 +4,19 @@ from functools import reduce
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 digits_to_segments = {
-    '0': 'abcefg',
-    '1': 'cf',
-    '2': 'acdeg',
-    '3': 'acdfg',
-    '4': 'bcdf',
-    '5': 'abdfg',
-    '6': 'abdefg',
-    '7': 'acf',
-    '8': 'abcdefg',
-    '9': 'abcdfg',
+    "0": "abcefg",
+    "1": "cf",
+    "2": "acdeg",
+    "3": "acdfg",
+    "4": "bcdf",
+    "5": "abdfg",
+    "6": "abdefg",
+    "7": "acf",
+    "8": "abcdefg",
+    "9": "abcdfg",
 }
 
 pattern_to_digit = {value: key for key, value in digits_to_segments.items()}
@@ -31,18 +31,24 @@ for digit, segments in digits_to_segments.items():
 
 # -
 
+
 def sortstring(s):
-    return ''.join(sorted(s))
+    return "".join(sorted(s))
 
 
 with open(filename) as f:
-    entries = [[[sortstring(s) for s in item.split()] for item in line.strip().split('|')] for line in f]
+    entries = [
+        [[sortstring(s) for s in item.split()] for item in line.strip().split("|")]
+        for line in f
+    ]
 
-easy_digits = ['1', '4', '7', '8']
+easy_digits = ["1", "4", "7", "8"]
 
-easy_lengths = {len(lit): digit for digit, lit in digits_to_segments.items() if digit in easy_digits}
+easy_lengths = {
+    len(lit): digit for digit, lit in digits_to_segments.items() if digit in easy_digits
+}
 
-all_segments = 'abcdefg'
+all_segments = "abcdefg"
 
 # # Part 1
 
@@ -53,7 +59,7 @@ for unique_patterns, output_patterns in entries:
     for output_pattern in output_patterns:
         if len(output_pattern) in easy_lengths:
             count += 1
-            
+
 solution(count)
 
 
@@ -61,9 +67,10 @@ solution(count)
 
 # # Part 2
 
+
 def decode(entry):
     unique_patterns, output_patterns = entry
-    
+
     # Step 1: figure out possibe digits using the length like in part 1
     unique_pattern_to_digit = defaultdict(set)
 
@@ -106,15 +113,19 @@ def decode(entry):
             break
 
     # Now we know the wire-segment mapping
-    actual_segment_to_wire = {segment: wire for wire, [segment] in possible_wire_to_segment.items()}
+    actual_segment_to_wire = {
+        segment: wire for wire, [segment] in possible_wire_to_segment.items()
+    }
 
     def real_digit(pattern):
-        return pattern_to_digit[''.join(sorted(actual_segment_to_wire[c] for c in pattern))]
+        return pattern_to_digit[
+            "".join(sorted(actual_segment_to_wire[c] for c in pattern))
+        ]
 
-    output_digits = ''.join(real_digit(output) for output in output_patterns)
+    output_digits = "".join(real_digit(output) for output in output_patterns)
 
     output_value = int(output_digits)
-    
+
     return output_value
 
 

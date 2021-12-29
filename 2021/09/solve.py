@@ -4,7 +4,7 @@ from aoc import print_board, solution
 from collections import Counter
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 data = []
 with open(filename) as f:
@@ -16,7 +16,7 @@ heightmap = np.array(data)
 cross = ndimage.morphology.generate_binary_structure(2, 1)
 cross[1, 1] = False
 
-mins = ndimage.minimum_filter(heightmap, footprint=cross, mode='constant', cval=10)
+mins = ndimage.minimum_filter(heightmap, footprint=cross, mode="constant", cval=10)
 minima = heightmap < mins
 if debug:
     print_board(heightmap, minima)

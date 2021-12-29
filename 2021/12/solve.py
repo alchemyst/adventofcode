@@ -4,7 +4,7 @@ from collections import Counter
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 
 def parse(filename):
@@ -13,7 +13,7 @@ def parse(filename):
     with open(filename) as f:
         for line in f:
             if line.strip():
-                start, stop = line.strip().split('-')
+                start, stop = line.strip().split("-")
                 graph.add_edge(start, stop)
 
     return graph
@@ -37,12 +37,12 @@ def valid_part_1(cave, pathsofar):
 
 
 def valid_part_2(cave, pathsofar):
-    if cave == 'start':
+    if cave == "start":
         return False
     if smallcave(cave):
         if cave not in pathsofar:
             return True
-        smallcavecounts = Counter(c for c in pathsofar if smallcave(c) and c != 'start')
+        smallcavecounts = Counter(c for c in pathsofar if smallcave(c) and c != "start")
         if max(smallcavecounts.values(), default=0) == 2:
             return False
 
@@ -52,5 +52,5 @@ def valid_part_2(cave, pathsofar):
 graph = parse(filename)
 
 for valid in (valid_part_1, valid_part_2):
-    allpaths = list(traverse('start', 'end', ['start'], valid))
+    allpaths = list(traverse("start", "end", ["start"], valid))
     solution(len(allpaths))

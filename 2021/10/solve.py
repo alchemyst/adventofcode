@@ -2,7 +2,7 @@ from statistics import median
 from aoc import solution
 
 debug = False
-filename = 'test.txt' if debug else 'input.txt'
+filename = "test.txt" if debug else "input.txt"
 
 with open(filename) as f:
     lines = [line.strip() for line in f]
@@ -13,16 +13,16 @@ opening = "([{<"
 closing = ")]}>"
 
 corrupt_points = {
-    ')': 3,
-    ']': 57,
-    '}': 1197,
-    '>': 25137,
+    ")": 3,
+    "]": 57,
+    "}": 1197,
+    ">": 25137,
 }
 complete_points = {
-    ')': 1,
-    ']': 2,
-    '}': 3,
-    '>': 4,
+    ")": 1,
+    "]": 2,
+    "}": 3,
+    ">": 4,
 }
 
 corrupt_score = 0
@@ -37,19 +37,21 @@ for line in lines:
 
         openchar = stack.pop()
         correct_closing = closing[opening.index(openchar)]
-        if char != correct_closing:   # corrupted line
+        if char != correct_closing:  # corrupted line
             if debug:
                 print("Incorrect closing:", char)
             corrupt_score += corrupt_points[char]
             break
     else:  # incomplete line
-        completion = ''.join(closing[opening.index(openchar)] for openchar in reversed(stack))
+        completion = "".join(
+            closing[opening.index(openchar)] for openchar in reversed(stack)
+        )
         score = 0
         for char in completion:
-            score = score*5 + complete_points[char]
+            score = score * 5 + complete_points[char]
 
         if debug:
-            print('Incomplete line, completion:', completion, score)
+            print("Incomplete line, completion:", completion, score)
 
         complete_scores.append(score)
 
