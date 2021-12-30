@@ -23,7 +23,7 @@ def process(instructions, inputs, invar=None):
             return int(item)
 
     for instruction in instructions:
-         match instruction:
+        match instruction:
             case 'inp', a:
                 var[a] = inputs.pop(0)
             case 'add', a, b:
@@ -45,6 +45,42 @@ def process(instructions, inputs, invar=None):
                 var[a] = int(var[a] != value(b))
 
     return var
+
+
+def to_python(instructions, i):
+    """convert a set of instructions to Python code"""
+
+    lines = [
+        '@cache',
+        f'def f{i}(digit, z):'
+    ]
+    indent = ' '*4
+
+    for instruction in instructions:
+        match instruction:
+            case 'inp', a:
+                line = f"{a} = digit"
+            case 'add', a, b:
+                line = f"{a} += {b}"
+            case 'mul', a, b:
+                line = f"{a} *= {b}"
+            case 'div', a, b:
+                line = f"{a} //= {b}"
+            case 'mod', a, b:
+                line = f"{a} %= {b}"
+            case 'eql', a, b:
+                line = f"{a} = int({a} == {b})"
+            # Extended syntax:
+            case 'set', a, b:
+                line = f"{a} = {b}"
+            case 'neq', a, b:
+                line = f"{a} = int({a} != {b})"
+
+        lines.append(indent + line)
+
+    lines.append(indent + 'return z')
+    return "\n".join(lines) + '\n'
+
 
 def optimize(instructions):
     result = []
@@ -83,9 +119,6 @@ def optimize(instructions):
         previous_instruction = instruction
     return tuple(result)
 
-@cache
-def cached_process(part, digit, z):
-    return process(part, [digit], {'z': z})['z']
 
 def inp_parts(instruction_str):
     parts = []
@@ -97,6 +130,7 @@ def inp_parts(instruction_str):
         part.append(tuple(line.split()))
 
     return tuple(tuple(part) for part in parts)
+
 
 def verify_only_z(parts):
     # Check what we need to change in a part
@@ -147,7 +181,7 @@ def make_serial(parts, z, digits):
         if key in CACHE:
             return CACHE[key]
 
-        outz = cached_process(first, digit, z)
+        outz = first(digit, z)
 
         # last part - check sum
         if not rest:
@@ -174,21 +208,21 @@ if __name__ == "__main__":
     verify_only_z(parts)
 
     parts = tuple(optimize(part) for part in parts)
-    # for part in parts:
-    #     for line in part:
-    #         print(' '.join(line))
-    # exit()
+    fnames = []
+    for i, part in enumerate(parts):
+        exec(compile(to_python(part, i), f'f{i}.py', 'exec'))
+        fnames.append(f'f{i}')
+    functions = eval(f'[{", ".join(fnames)}]')
 
     CACHE = {}
 
-    # So, we proceed by only using 'z' as a changeable input
-    part_1_serial = make_serial(parts, 0, VALID_DIGITS[::-1])
+    part_1_serial = make_serial(functions, 0, VALID_DIGITS[::-1])
     print()
     solution(''.join(str(d) for d in part_1_serial))
 
     # Part 2
     # Scrub cached "working" values but retain knowledge about invalid combos
     CACHE = {key: value for key, value in CACHE.items() if not value}
-    part_2_serial = make_serial(parts, 0, VALID_DIGITS)
+    part_2_serial = make_serial(functions, 0, VALID_DIGITS)
     print()
     solution(''.join(str(d) for d in part_2_serial))
