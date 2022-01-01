@@ -1,6 +1,3 @@
-import pathlib
-from functools import cache
-
 from aoc import solution
 
 VALID_DIGITS = list(range(1, 10))
@@ -51,7 +48,6 @@ def to_python(instructions, i):
     """convert a set of instructions to Python code"""
 
     lines = [
-        '@cache',
         f'def f{i}(digit, z):'
     ]
     indent = ' '*4
@@ -81,6 +77,44 @@ def to_python(instructions, i):
     lines.append(indent + 'return z')
     return "\n".join(lines) + '\n'
 
+def to_fortran(instructions, i):
+    """convert a set of instructions to Python code"""
+
+    lines = [
+        f'pure integer function f{i}(digit, inz)',
+        'integer, intent(in) :: digit, inz',
+        'integer :: w, x, y, z',
+        '',
+        'z = inz',
+    ]
+    indent = ' '*4
+
+    for instruction in instructions:
+        match instruction:
+            case 'inp', a:
+                line = f"{a} = digit"
+            case 'add', a, b:
+                line = f"{a} = {a} + {b}"
+            case 'mul', a, b:
+                line = f"{a} = {a} * {b}"
+            case 'div', a, b:
+                line = f"{a} = {a} / {b}"
+            case 'mod', a, b:
+                line = f"{a} = MOD({a}, {b})"
+            case 'eql', a, b:
+                line = f"{a} = {a} == {b}"
+            # Extended syntax:
+            case 'set', a, b:
+                line = f"{a} = {b}"
+            case 'neq', a, b:
+                line = f"{a} = {a} /= {b}"
+
+        lines.append(indent + line)
+    lines.append(indent + f'f{i} = z')
+
+    lines.append('end function')
+
+    return "\n".join(lines) + '\n'
 
 def optimize(instructions):
     result = []
@@ -200,7 +234,8 @@ def make_serial(parts, z, digits):
 
 
 if __name__ == "__main__":
-    all_results_cache = pathlib.Path('all_results.pickle')
+    do_fortran = False
+
     instruction_str = parse('input.txt')
 
     parts = inp_parts(instruction_str)
@@ -208,11 +243,24 @@ if __name__ == "__main__":
     verify_only_z(parts)
 
     parts = tuple(optimize(part) for part in parts)
+
     fnames = []
     for i, part in enumerate(parts):
         exec(compile(to_python(part, i), f'f{i}.py', 'exec'))
         fnames.append(f'f{i}')
     functions = eval(f'[{", ".join(fnames)}]')
+
+    if do_fortran:
+        from numpy import f2py
+
+        fortran_code = '\n'.join(to_fortran(part, i) for i, part in enumerate(parts))
+        f2py.compile(fortran_code, modulename='fortran_functions', extension='.f90')
+        from fortran_functions import *
+
+        functions = eval(f'[{", ".join(fnames)}]')
+
+    # Caching the functions just makes them slower
+    # functions = [cache(f) for f in functions]
 
     CACHE = {}
 
