@@ -5,3 +5,5 @@ sample.txt
 .idea
 leaderboard/*.json
 /leaderboard/scores.tsv
+__pycache__
+*.so
