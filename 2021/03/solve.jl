@@ -1,4 +1,4 @@
-using StatsBase
+import StatsBase
 
 lines = map(collect, readlines("input.txt"))
 data = permutedims(hcat(lines...))
@@ -34,8 +34,8 @@ toint(s) = parse(Int64, join(s), base=2)
 gamma = toint(gamma_bits)
 epsilon = toint(epsilon_bits)
 
-print("Part 1")
-print(gamma*epsilon)
+println("Part 1")
+println(gamma*epsilon)
 
 function apply_bit_criteria(data, hi, position)
     most_common_bit, least_common_bit, same = bitcount(data[:, position])
@@ -75,5 +75,5 @@ end
 oxygen_generator_rating = toint(bitcheck(data, true))
 CO2_scrubber_rating = toint(bitcheck(data, false))
 
-print("Part 2")
-print(oxygen_generator_rating*CO2_scrubber_rating)
+println("Part 2")
+println(oxygen_generator_rating*CO2_scrubber_rating)
