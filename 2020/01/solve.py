@@ -1,6 +1,6 @@
 import numpy
 
-a = numpy.array([int(line.strip()) for line in open('01/input.txt')])
+a = numpy.array([int(line.strip()) for line in open('input.txt')])
 
 # part 1.1
 

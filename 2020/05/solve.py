@@ -22,7 +22,7 @@ def seat_id(string):
 
 print(seat_id('FBFBBFFRLR'))
 ids = []
-with open('05/input.txt') as f:
+with open('input.txt') as f:
     for line in f:
         line.strip()
         ids.append(seat_id(line))

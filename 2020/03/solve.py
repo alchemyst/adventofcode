@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 themap = []
-with open('03/input.txt') as f:
+with open('input.txt') as f:
     for line in f:
         line = line.strip()
         themap.append([1 if ch == '#' else 0 for ch in line])

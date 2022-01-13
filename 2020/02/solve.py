@@ -7,15 +7,15 @@ pattern = re.compile(r'(\d+)-(\d+) (.): (.*)')
 c1 = 0
 c2 = 0
 
-for line in open('02/input.txt'):
-    print(line)
+for line in open('input.txt'):
+    # print(line)
 
     m = pattern.match(line.strip())
     lower, upper, char, password = m.groups()
     lower = int(lower)
     upper = int(upper)
 
-    print(lower, upper, char, password)
+    # print(lower, upper, char, password)
 
     if lower <= password.count(char) <= upper:
         c1 += 1

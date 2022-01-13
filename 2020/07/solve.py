@@ -6,7 +6,7 @@ from collections import defaultdict
 contents = defaultdict(dict)
 fitsin = defaultdict(set)
 
-for line in open('07/input.txt'):
+for line in open('input.txt'):
     container, contains = line.strip().split(' contain ')
     container = ' '.join(container.split()[:2])
 

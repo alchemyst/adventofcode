@@ -5,7 +5,7 @@ from collections import Counter
 group = []
 groups = [group]
 
-for line in open('06/input.txt'):
+for line in open('input.txt'):
     line = line.strip()
 
     if not line:

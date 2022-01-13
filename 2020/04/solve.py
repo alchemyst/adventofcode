@@ -6,7 +6,7 @@ passports = []
 passport = {}
 passports.append(passport)
 
-with open('04/input.txt') as f:
+with open('input.txt') as f:
     for line in f:
         line = line.strip()
 
