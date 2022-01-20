@@ -1,9 +1,18 @@
+import operator
 from aoc import solution
 
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
+OPERATIONS = {
+    "AND": operator.and_,
+    "OR": operator.or_,
+    "LSHIFT": operator.lshift,
+    "RSHIFT": operator.rshift,
+}
+
 instructions = []
+
 
 with open(filename) as f:
     for line in f:
@@ -39,18 +48,9 @@ def emulate(instructions):
             case "NOT", inwire, outwire:
                 if check(instruction, [inwire]):
                     wires[outwire] = ~value(inwire) & 0xFFFF
-            case inwire1, "AND", inwire2, outwire:
+            case inwire1, str(operation), inwire2, outwire:
                 if check(instruction, [inwire1, inwire2]):
-                    wires[outwire] = (value(inwire1) & value(inwire2)) & 0xFFFF
-            case inwire1, "OR", inwire2, outwire:
-                if check(instruction, [inwire1, inwire2]):
-                    wires[outwire] = (value(inwire1) | value(inwire2)) & 0xFFFF
-            case inwire, "LSHIFT", shift, outwire:
-                if check(instruction, [inwire, shift]):
-                    wires[outwire] = (value(inwire) << value(shift)) & 0xFFFF
-            case inwire, "RSHIFT", shift, outwire:
-                if check(instruction, [inwire, shift]):
-                    wires[outwire] = (value(inwire) >> value(shift)) & 0xFFFF
+                    wires[outwire] = OPERATIONS[operation](value(inwire1), value(inwire2)) & 0xFFFF
 
     return wires
 
