@@ -68,13 +68,7 @@ class Board:
             rooms = [[".", "."]] * 4
 
         self.roomsize = len(rooms[0])
-
-        self.spaces = hall[:]
-        for room in rooms:
-            self.spaces += room
-
-    def __lt__(self, other):
-        return self.spaces < other.spaces
+        self.spaces = "".join(hall) + "".join(["".join(r) for r in rooms])
 
     def copy(self):
         return Board(self.rooms(), self.hall())
@@ -187,14 +181,18 @@ class Board:
         hall = [symm[c] for c in reversed(self.hall())]
         rooms = [tuple(symm[c] for c in r) for r in reversed(self.rooms())]
 
-        return Board(hall, rooms)
+        return Board(rooms, hall)
 
     def apply_move(self, move):
         a, b = move
         energy = self.move_energy(move)
         pod = self.spaces[a]
-        self.spaces[b] = pod
-        self.spaces[a] = "."
+
+        spaces = list(self.spaces)
+        spaces[b] = pod
+        spaces[a] = "."
+        self.spaces = "".join(spaces)
+
         return energy
 
     def board_with_move(self, move):
