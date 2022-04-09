@@ -5,12 +5,7 @@ filename = if debug "test.txt" else "input.txt" end
 data = []
 
 f = open(filename)
-for line in readlines(f)
-    l, w, h = map(s -> parse(Int, s), split(line, 'x'))
-    push!(data, [l, w, h])
-end
-
-return data
+data = [parse.(Int, split(line, 'x')) for line in readlines(f)]
 
 # Part 1
 area = 0
