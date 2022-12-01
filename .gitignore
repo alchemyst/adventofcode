@@ -7,3 +7,4 @@ leaderboard/*.json
 /leaderboard/scores.tsv
 __pycache__
 *.so
+timing.json
