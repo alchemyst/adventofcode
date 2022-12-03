@@ -7,14 +7,16 @@ import requests
 import aoc_api
 
 LEADERBOARD_ID = "1189810"
+YEAR = 2022
 
-URL = f"https://adventofcode.com/2021/leaderboard/private/view/{LEADERBOARD_ID}.json"
+URL = f"https://adventofcode.com/{YEAR}/leaderboard/private/view/{LEADERBOARD_ID}.json"
 
-target = pathlib.Path(f'{LEADERBOARD_ID}.json')
+target = pathlib.Path(str(YEAR), f'{LEADERBOARD_ID}.json')
 
-modified = datetime.datetime.now() - datetime.datetime.fromtimestamp(target.stat().st_mtime)
+def modified(target):
+    return datetime.datetime.now() - datetime.datetime.fromtimestamp(target.stat().st_mtime)
 
-if target.exists() and modified < datetime.timedelta(minutes=15):
+if target.exists() and modified(target) < datetime.timedelta(minutes=15):
     sys.exit()
 
 data = aoc_api.get(URL)
