@@ -1,32 +1,29 @@
+import itertools
+
 from aoc import solution
 
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
-
-def pad(l, n, v):
-    for i in range(n):
-        if i < len(l):
-            yield l[i]
-        else:
-            yield v
-
-
 def read_file(filename):
-    crates = []
+    layers = []
     with open(filename) as f:
         for line in f:
             if line.strip().startswith('1'):
+                spaces = len(line.split())
                 continue
             if not line.strip():
                 break
 
-            crates.append(list(line[1::4]))
+            layers.append(list(line[1::4]))
 
-        spaces = max(len(c) for c in crates)
-        if debug: print(spaces)
-        crates = [list(pad(l, spaces, ' ')) for l in crates]
-        piles = [[item for item in c[::-1] if item != ' '] for c in zip(*crates)]
+        if debug:
+            print(spaces)
+            print(layers)
+
+        layers = [l + [' ']*(spaces - len(l)) for l in layers]
+
+        piles = [[item for item in c[::-1] if item != ' '] for c in zip(*layers)]
 
         if debug:
             print(piles)
@@ -50,6 +47,7 @@ def run(stack):
     top_crates = ''.join([p[-1] for p in piles])
 
     return top_crates
+
 
 def stack1(piles, instructions):
     # number, from, to
@@ -78,6 +76,7 @@ def stack2(piles, instructions):
         if debug:
             print(piles)
             print()
+
 
 # Part 2
 solution(run(stack2))
