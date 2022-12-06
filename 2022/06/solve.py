@@ -1,3 +1,5 @@
+from more_itertools import windowed
+
 from aoc import solution
 
 debug = False
@@ -5,12 +7,9 @@ filename = 'test.txt' if debug else 'input.txt'
 
 
 def find_marker(line, size):
-    for i in range(size, len(line) - size):
-        part = line[i - size:i]
-        if len(set(part)) == size:
-            break
-
-    return i
+    for i, chars in enumerate(windowed(line, size), size):
+        if len(set(chars)) == size:
+            return i
 
 
 with open(filename) as f:
