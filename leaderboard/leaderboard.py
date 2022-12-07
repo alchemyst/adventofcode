@@ -149,6 +149,7 @@ def get_position(text):
 def get_position_x(text):
     return text.get_position()[0]
 
+
 def adjust(texts, multiple):
     texts.sort(key=get_position)
     for x, xtexts in itertools.groupby(texts, key=get_position_x):
