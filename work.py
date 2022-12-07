@@ -1,15 +1,18 @@
+import argparse
 import datetime
 import pathlib
 import shutil
 import sys
-import argparse
+
 import aocd
 
 year = 2015
 advent_days = range(1, 26)
 
+
 def challenge_path(year, day):
     return pathlib.Path(str(year), f'{day:02d}')
+
 
 date = datetime.date.today()
 
