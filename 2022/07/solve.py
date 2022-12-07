@@ -10,17 +10,17 @@ path = ['/']
 with open(filename) as f:
     for line in f:
         match line.strip().split():
-            case ['$', 'cd', '/']:
+            case '$', 'cd', '/':
                 path = ['/']
-            case ['$', 'cd', '..']:
+            case '$', 'cd', '..':
                 path.pop()
-            case ['$', 'cd', dirname]:
+            case '$', 'cd', dirname:
                 path.append(dirname)
-            case ['$', 'ls']:
+            case '$', 'ls':
                 pass
-            case ['dir', dirname]:
+            case 'dir', dirname:
                 pass
-            case [size_str, _]:
+            case size_str, _:
                 for i in range(len(path)):
                     sizes[tuple(path[:i + 1])] += int(size_str)
 
