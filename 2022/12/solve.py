@@ -3,7 +3,10 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 
-debug = False
+from aoc.array import neighbours
+
+debug = True
+plot = False
 filename = 'test.txt' if debug else 'input.txt'
 
 with open(filename) as f:
@@ -28,25 +31,17 @@ board[S] = 'a'
 board[E] = 'z'
 
 for (i, j), v in np.ndenumerate(board):
-    plt.text(j, I-i, v)
-    # up
-    if i > 0:
-        edge(board, i, j, i-1, j, g)
-    # down
-    if i < I-1:
-        edge(board, i, j, i+1, j, g)
-    # left
-    if j > 0:
-        edge(board, i, j, i, j-1, g)
-    # right
-    if j < J-1:
-        edge(board, i, j, i, j+1, g)
+    if plot:
+        plt.text(j, I-i, v)
+    for ii, jj in neighbours(board, i, j):
+        edge(board, i, j, ii, jj, g)
 
 path = nx.shortest_path(g, S, E)
 
-path_plot = np.array(path).T
-plt.plot(path_plot[1, :], I - path_plot[0, :])
-plt.show()
+if plot:
+    path_plot = np.array(path).T
+    plt.plot(path_plot[1, :], I - path_plot[0, :])
+    plt.show()
 
 # Part 1
 solution(len(path)-1)
