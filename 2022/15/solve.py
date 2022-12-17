@@ -8,7 +8,7 @@ from aoc import solution
 import re
 
 debug = False
-plot = True
+plot = False
 filename = 'test.txt' if debug else 'input.txt'
 
 int_re = re.compile(r'[-0-9]+')
@@ -23,53 +23,28 @@ with open(filename) as f:
 
 sensors = np.array(sensors)
 beacons = np.array(beacons)
+distances = np.abs(sensors - beacons).sum(axis=1)
+
 
 def dist(p1, p2):
     return np.abs(p1 - p2).sum()
 
-if plot: fig, ax = plt.subplots()
 
-if debug:
-    y = 10
-else:
-    y = 2000000
+def find_edges(sensors, distances, y):
+    edges = []
+    for s, d in zip(sensors, distances):
+        sx, sy = s
+        dy = abs(sy - y)
+        if dy > d:
+            continue
+        offset = d - dy
+        edges += [(sx - offset, 1), (sx + offset, -1)]
+    edges.sort()
 
-distances = np.abs(sensors - beacons).sum(axis=1)
+    return edges
 
-def part1():
-    reachable = (sensors[:, 1] + distances > y) & (sensors[:, 1] - distances < y)
 
-    rsensors = sensors[reachable, :]
-    rbeacons = beacons[reachable, :]
-    rdistances = distances[reachable]
-    minx = (rsensors[:, 0] - rdistances).min()
-    maxx = (rsensors[:, 0] + rdistances).max()
-
-    covered_x = set()
-    print(minx, maxx)
-    for x in tqdm(range(minx, maxx)):
-        for s, d in zip(rsensors, rdistances):
-            point = (x, y)
-            if dist(s, point) <= d:
-                covered_x.add(x)
-
-    for bx, by in beacons:
-        if by == y:
-            if bx in covered_x:
-                covered_x.remove(bx)
-
-covered_x = part1()
-
-# Part 1
-solution(len(covered_x))
-
-# Part 2
-if debug:
-    boardsize = 20
-else:
-    boardsize = 4000000
-
-def plot_board(zoom):
+def plot_board(zoom=False):
     fig, ax = plt.subplots()
 
     for s, b, d in zip(sensors, beacons, distances):
@@ -84,26 +59,48 @@ def plot_board(zoom):
         plt.xlim([found_x - 10, found_x + 10])
         plt.ylim([found_y - 10, found_y + 10])
 
-    plt.plot(found_x, found_y, 'rx')
     ax.invert_yaxis()
 
-if plot: plot_board()
+
+# Part 1
+if debug:
+    y = 10
+else:
+    y = 2000000
+
+covered_x = set()
+for s, d in zip(sensors, distances):
+    sx, sy = s
+    dy = abs(sy - y)
+    if dy > d:
+        continue
+    offset = d - dy
+    covered_x.update(range(sx - offset, sx + offset+1))
+
+for bx, by in beacons:
+    if by == y:
+        covered_x -= {bx}
+
+if plot:
+    plot_board()
+    for x in covered_x:
+        plt.plot(x, y, 'kx')
+
+solution(len(covered_x))
+
+# Part 2
+if debug:
+    boardsize = 20
+else:
+    boardsize = 4000000
+
 
 found_y = None
 for y in tqdm(range(boardsize)):
     x = 0
-    if plot: plt.axhline(y)
-    edges = []
-    for s, d in zip(sensors, distances):
-        sx, sy = s
-        dy = abs(sy - y)
-        if dy > d:
-            continue
-        offset = d - dy
-        edges += [(sx - offset, 1), (sx + offset, -1)]
-    edges.sort()
     coverage = 0
     coverplot = []
+    edges = find_edges(sensors, distances, y)
     for x, g in groupby(edges, itemgetter(0)):
         total_coverage = sum(c for _, c in g)
         coverage += total_coverage
@@ -118,7 +115,8 @@ for y in tqdm(range(boardsize)):
 
 
 if plot:
-    plt.show(zoom=True)
+    plt.plot(found_x, found_y, 'rx')
+    plt.show()
 
 tuning_frequency = found_x*4000000 + found_y
 solution(tuning_frequency)
