@@ -1,5 +1,5 @@
 from itertools import pairwise, chain, count
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from aoc import solution, print_board
 import numpy as np
@@ -85,9 +85,9 @@ for grains in count():
     if (sand == [500, 0]).all():
         break
 
-used = (board[:, :maxy]).any(axis=1)
-plt.imshow(board[:, used].T)
-plt.show()
+# used = (board[:, :maxy]).any(axis=1)
+# plt.imshow(board[:, used].T)
+# plt.show()
 
 # Part 2
 solution(grains+1)
