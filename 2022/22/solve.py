@@ -24,7 +24,6 @@ if debug:
         [4, 5, 3, 0],
         [0, 0, 1, 2],
     ])
-    # connectivity: down, right, up, left
     # face, new_direction
     conn = {
         #   right       down        left       up
@@ -147,12 +146,12 @@ def walk(board, instructions, forward):
     return position, direction, positions
 
 
-# position, direction, positions = walk(board, instructions, forward1)
-#
-# if debug:
-#     plot_board(board, positions)
-#
-# solution(1000 * (position[0] + 1) + 4 * (position[1] + 1) + direction)
+position, direction, positions = walk(board, instructions, forward1)
+
+if debug:
+    plot_board(board, positions)
+
+solution(1000 * (position[0] + 1) + 4 * (position[1] + 1) + direction)
 
 def get_face(position):
     return faces[tuple((position // face_size) % faces.shape)]
