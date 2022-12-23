@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from aoc.array import neighbours
 
-debug = True
+debug = False
 plot = False
 filename = 'test.txt' if debug else 'input.txt'
 

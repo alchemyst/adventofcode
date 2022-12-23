@@ -60,7 +60,7 @@ class Monkey:
 
         self.world.worry_levels[item] = worry_level
 
-        target = self.targets[worry_level % self.divisor == 0]
+        target = self.targets[int(worry_level % self.divisor == 0)]
 
         return target
 

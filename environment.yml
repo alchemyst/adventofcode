@@ -16,3 +16,6 @@ dependencies:
   - rich
   - networkx
   - parse
+  - pip
+  - pip:
+    - pulp

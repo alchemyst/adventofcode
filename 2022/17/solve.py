@@ -3,7 +3,7 @@ from itertools import cycle
 from aoc import solution, print_board
 import numpy as np
 
-debug = True
+debug = False
 move_debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
