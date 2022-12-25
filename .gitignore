@@ -8,3 +8,4 @@ leaderboard/*.json
 __pycache__
 *.so
 timing.json
+output
