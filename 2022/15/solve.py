@@ -26,23 +26,19 @@ beacons = np.array(beacons)
 distances = np.abs(sensors - beacons).sum(axis=1)
 
 
-def dist(p1, p2):
-    return np.abs(p1 - p2).sum()
-
-
 def find_edges(sensors, distances, y):
+    dy = np.abs(sensors[:, 1] - y)
+    active_sensors = dy <= distances
+
+    offsets = distances[active_sensors] - dy[active_sensors]
+    sx = sensors[active_sensors, 0]
+
     edges = []
-    for s, d in zip(sensors, distances):
-        sx, sy = s
-        dy = abs(sy - y)
-        if dy > d:
-            continue
-        offset = d - dy
+    for (sx, sy), offset in zip(sensors[active_sensors], offsets):
         edges += [(sx - offset, 1), (sx + offset, -1)]
     edges.sort()
 
     return edges
-
 
 def plot_board(zoom=False):
     fig, ax = plt.subplots()
@@ -53,7 +49,6 @@ def plot_board(zoom=False):
         x, y = s
 
         plt.fill([x-d, x, x+d, x], [y, y-d, y, y+d], color='b', alpha=0.1)
-
 
     if zoom:
         plt.xlim([found_x - 10, found_x + 10])
@@ -97,15 +92,15 @@ else:
 
 found_y = None
 for y in tqdm(range(boardsize)):
-    x = 0
     coverage = 0
-    coverplot = []
     edges = find_edges(sensors, distances, y)
+
     for x, g in groupby(edges, itemgetter(0)):
-        total_coverage = sum(c for _, c in g)
-        coverage += total_coverage
-        coverplot.append([x, coverage])
-        if coverage == 0 and 0 <= x <= boardsize:
+        if x > boardsize:
+            break
+
+        coverage += sum(c for _, c in g)
+        if coverage == 0:
             found_x = x + 1
             found_y = y
             break
