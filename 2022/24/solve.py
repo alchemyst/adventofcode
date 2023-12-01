@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 debug = False
 plot = False
-save = True
+save = False
 filename = 'test.txt' if debug else 'input.txt'
 
 directions = {
