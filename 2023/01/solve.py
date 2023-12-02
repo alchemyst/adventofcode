@@ -31,5 +31,5 @@ def part2(line):
     last = digit_values[m_end[1]]
     return first * 10 + last
 
-
+æ
 solution(sum_every(part2, open(filename)))
