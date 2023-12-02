@@ -13,6 +13,7 @@ dependencies:
   - certifi
   - openssl
   - matplotlib
+  - more-itertools
   - rich
   - networkx
   - parse
