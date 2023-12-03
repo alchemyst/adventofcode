@@ -6,7 +6,7 @@ import sys
 
 import aocd
 
-year = 2015
+year = 2023
 advent_days = range(1, 26)
 
 
