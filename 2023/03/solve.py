@@ -18,21 +18,17 @@ periods = board == '.'
 
 symbols = ~(digits | periods)
 
-k = np.ones((3, 3))
-
-neighbourhood = sc.signal.convolve2d(symbols, k, mode='same') >= 1
+neighbourhood = sc.signal.convolve2d(symbols, np.ones((3, 3)), mode='same') >= 1
 
 numbers, _ = sc.ndimage.label(digits, structure=[[0, 0, 0], [1, 1, 1], [0, 0, 0]])
 
-numbers_parsed = {}
-
-s = 0
-for group in np.unique(numbers[neighbourhood & (numbers != 0)]):
-    n = numbers_parsed[group] = int(''.join(board[numbers == group]))
-    s += n
+numbers_parsed = {
+    group: int(''.join(board[numbers == group]))
+    for group in np.unique(numbers[neighbourhood & (numbers != 0)])
+}
 
 # Part 1
-solution(s)
+solution(sum(numbers_parsed.values()))
 
 # Part 2
 
