@@ -1,6 +1,4 @@
-from collections import defaultdict
-
-from aoc import solution
+from aoc import solution, sum_every
 import re
 
 debug = False
@@ -17,30 +15,21 @@ def match_count(line):
     what_i_have = {int(n) for n in numbers.findall(post)}
     return len(winning.intersection(what_i_have))
 
-points = 0
-for line in lines:
-    matches = match_count(line)
+matches_lines = [match_count(line) for line in lines]
 
-    if matches == 1:
-        points += 1
-    elif matches == 2:
-        points += 2
-    elif matches > 2:
-        points += 2**(matches - 1)
+
+def points(matches):
+    return 0 if matches == 0 else 2**(matches - 1)
 
 
 # Part 1
-solution(points)
+solution(sum_every(points, matches_lines))
 
 # Part 2
+card_counts = {card_number: 1 for card_number in range(1, len(lines)+1)}
 
-card_counts = defaultdict(lambda: 1)
-
-for card_number, line in enumerate(lines, 1):
-    matches = match_count(line)
-
+for card_number, matches in enumerate(matches_lines, 1):
     for card_offset in range(matches):
         card_counts[card_number + card_offset + 1] += card_counts[card_number]
-
 
 solution(sum(card_counts.values()))
