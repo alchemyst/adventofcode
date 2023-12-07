@@ -7,7 +7,7 @@ import requests
 import aoc_api
 
 LEADERBOARD_ID = "1189810"
-YEAR = 2022
+YEAR = 2023
 
 URL = f"https://adventofcode.com/{YEAR}/leaderboard/private/view/{LEADERBOARD_ID}.json"
 
