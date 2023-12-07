@@ -3,6 +3,7 @@ import datetime
 import pathlib
 import shutil
 import sys
+import webbrowser
 
 import aocd
 
@@ -59,4 +60,4 @@ puzzle = aocd.models.Puzzle(year=year, day=day)
 with open(inputdata, 'w') as f:
     f.write(puzzle.input_data)
 
-print(f'https://adventofcode.com/{year}/day/{day}')
+webbrowser.open_new_tab(f'https://adventofcode.com/{year}/day/{day}')
