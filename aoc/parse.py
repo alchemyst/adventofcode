@@ -1,6 +1,6 @@
 import re
 
-numbers = re.compile('[0-9]+')
+numbers = re.compile('[-0-9]+')
 
 
 def read_splitlines(filename):
