@@ -1,5 +1,5 @@
 from aoc import solution
-from aoc.array import read_board
+from aoc.array import read_board, neighbours
 from aoc.display import print_board
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -40,12 +40,6 @@ connections = {
     'F': {'south', 'east'},
 }
 
-links = {
-    'north': 'south',
-    'south': 'north',
-    'east': 'west',
-    'west': 'east',
-}
 
 matches = {
     (-1, 0): ('north', 'south'),
@@ -62,17 +56,19 @@ def connectivity(board):
     # build the connectivity graph
     graph = nx.Graph()
     for this_ij, value in np.ndenumerate(board):
+        if value not in connections:
+            continue
+        neighbourhood = set(neighbours(board, *this_ij))
         for delta_ij in matches:
             other_ij = add(this_ij, delta_ij)
-            if any(i < 0 for i in other_ij):
-                continue
-            try:
-                other_value = str(board[other_ij])
-            except:
+            if other_ij not in neighbourhood or board[other_ij] not in connections:
                 continue
 
-            this_connections = connections.get(value, set())
-            other_connections = connections.get(other_value, set())
+            other_value = str(board[other_ij])
+
+            this_connections = connections[value]
+            other_connections = connections[other_value]
+
             mine, theirs = matches[delta_ij]
             if mine not in this_connections or theirs not in other_connections:
                 continue
