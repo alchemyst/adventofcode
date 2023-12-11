@@ -1,12 +1,16 @@
-from aoc import solution
-from aoc.array import read_board, neighbours
-from aoc.display import print_board
-import networkx as nx
+from collections import defaultdict
+
 import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
+from matplotlib.path import Path
+
+from aoc import solution
+from aoc.array import read_board
+from aoc.display import print_board
 
 debug = False
-filename = 'test3.txt' if debug else 'input.txt'
+filename = 'test.txt' if debug else 'input.txt'
 
 board = np.array(read_board(filename))
 
@@ -15,38 +19,20 @@ if debug: print_board(board, type='s')
 start = tuple(int(i[0]) for i in (np.array(board) == 'S').nonzero())
 
 # using (row, col)
-directions = {
-    'north': (-1, 0),
-    'south': (1, 0),
-    'east': (0, 1),
-    'west': (0, -1),
-}
-
-#| is a vertical pipe connecting north and south.
-# - is a horizontal pipe connecting east and west.
-# L is a 90-degree bend connecting north and east.
-# J is a 90-degree bend connecting north and west.
-# 7 is a 90-degree bend connecting south and west.
-# F is a 90-degree bend connecting south and east.
-# . is ground; there is no pipe in this tile.
-# S is the starting position of the animal; there is a pipe on this tile, but your sketch doesn't show what shape the pipe has.
+north = (-1, 0)
+south = (1, 0)
+east = (0, 1)
+west = (0, -1)
 
 connections = {
-    '|': {'north', 'south'},
-    '-': {'east', 'west'},
-    'L': {'north', 'east'},
-    'J': {'north', 'west'},
-    '7': {'south', 'west'},
-    'F': {'south', 'east'},
+    '|': (north, south),
+    '-': (east, west),
+    'L': (north, east),
+    'J': (north, west),
+    '7': (south, west),
+    'F': (south, east),
 }
 
-
-matches = {
-    (-1, 0): ('north', 'south'),
-    (1, 0): ('south', 'north'),
-    (0, 1): ('east', 'west'),
-    (0, -1): ('west', 'east'),
-}
 
 def add(self, other):
     return tuple(s + o for s, o in zip(self, other))
@@ -54,54 +40,45 @@ def add(self, other):
 
 def connectivity(board):
     # build the connectivity graph
-    graph = nx.Graph()
+
+    edge_count = defaultdict(int)
     for this_ij, value in np.ndenumerate(board):
-        if value not in connections:
-            continue
-        neighbourhood = set(neighbours(board, *this_ij))
-        for delta_ij in matches:
-            other_ij = add(this_ij, delta_ij)
-            if other_ij not in neighbourhood or board[other_ij] not in connections:
-                continue
+        for delta_ij in connections.get(value, ()):
+            implied_edge = (this_ij, add(this_ij, delta_ij))
+            edge_count[tuple(sorted(implied_edge))] += 1
 
-            other_value = str(board[other_ij])
-
-            this_connections = connections[value]
-            other_connections = connections[other_value]
-
-            mine, theirs = matches[delta_ij]
-            if mine not in this_connections or theirs not in other_connections:
-                continue
-
-            graph.add_edge(this_ij, other_ij)
+    graph = nx.Graph()
+    for edge, count in edge_count.items():
+        if count == 2:
+            graph.add_edge(*edge)
 
     return graph
 
+# Idea: instead of trying all the kinds of connections
+# try the ones that can connect to exactly two neighbours
 for connection in connections:
     newboard = board.copy()
     newboard[start] = connection
     graph = connectivity(newboard)
-
-    if False and debug:
+    if debug:
         nx.draw(graph)
         plt.show()
 
     try:
         cycle = nx.find_cycle(graph, start)
+        break
     except:
         continue
 
 
 # Part 1
-solution(len(cycle)/2)
+solution(int(len(cycle)/2))
 
 # Part 2
 candidates = np.ones_like(board, dtype=bool)
 for node1, node2 in cycle:
     candidates[node1] = 0
     candidates[node2] = 0
-
-from matplotlib.path import Path
 
 cycle_path = Path([c for c, _ in cycle], closed=True)
 
