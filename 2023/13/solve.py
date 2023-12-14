@@ -5,48 +5,32 @@ from aoc import solution
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
-boards = []
-board = []
-boards.append(board)
 with open(filename) as f:
-    for line in f:
-        if line := line.strip():
-            board.append(list(line))
-        else:
-            board = []
-            boards.append(board)
+    blocks = f.read().split('\n\n')
 
-boards = [np.array(board) for board in boards]
+boards = [np.array([list(line) for line in block.splitlines(keepends=False)]) for block in blocks]
 
-
-def reflection(board, target=0, flipped=False):
+def reflection(board, target=0):
     cols = board.shape[1]
-    for i in range(1, cols//2 + 1):
-        left = board[:, :i]
-        right = board[:, i:i*2]
+    for i in range(1, cols):
+        width = min(i, cols-i)
+        left = board[:, i-width:i]
+        right = board[:, i + width-1:i-1:-1]
 
-        mismatches = (left != np.fliplr(right)).sum()
-        if mismatches == target:
+        if (left != right).sum() == target:
             return i
 
-    if flipped:  # we checked both sides
-        return None
-
-    flipped_reflection = reflection(np.fliplr(board), target, flipped=True)
-
-    return cols - flipped_reflection if flipped_reflection is not None else None
+    return 0
 
 
 def summarise(boards, target):
-    verticals = []
-    horizontals = []
+    vertical_sum = 0
+    horizontal_sum = 0
     for board in boards:
-        if (v := reflection(board, target)) is not None:
-            verticals.append(v)
-        if (h := reflection(board.T, target)) is not None:
-            horizontals.append(h)
+        vertical_sum += reflection(board, target)
+        horizontal_sum += reflection(board.T, target)
 
-    return sum(verticals) + 100*sum(horizontals)
+    return vertical_sum + 100*horizontal_sum
 
 
 # Part 1
