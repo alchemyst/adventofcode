@@ -2,7 +2,7 @@ from itertools import product
 from typing import Generator, Tuple, Any
 
 
-def read_board(filename):
+def read_board(filename, converter=None):
     """Read a file containing a rectangular array of characters
 
     returns a nested list of characters
@@ -10,7 +10,10 @@ def read_board(filename):
     with open(filename) as f:
         lines = f.read().splitlines()
 
-    return list(map(list, lines))
+    if converter is None:
+        return list(map(list, lines))
+    else:
+        return [[converter(c) for c in line] for line in lines]
 
 def neighbours(
         arr,
@@ -20,6 +23,8 @@ def neighbours(
         simple: bool=True,
         diag: bool=False,
         values: bool=False,
+        deltas: bool=False,
+        stepsize: int=1,
 ) -> Generator[Tuple[int, int] | Any, None, None]:
     """
     Return the locations or values of the neighbours of an element in an array
@@ -33,7 +38,7 @@ def neighbours(
     :return: iterator of (row, col) or iterator of arr[row, col]
     """
     maxi, maxj = arr.shape
-    for di, dj in product([-1, 0, 1], repeat=2):
+    for di, dj in product([-stepsize, 0, stepsize], repeat=2):
         ri = i + di
         rj = j + dj
         if 0 <= ri < maxi and 0 <= rj < maxj:
@@ -46,5 +51,14 @@ def neighbours(
 
             if values:
                 yield arr[ri, rj]
+            elif deltas:
+                yield di, dj
             else:
                 yield ri, rj
+
+
+def on_board(board, i, j):
+    rows = len(board)
+    cols = len(board[0])
+
+    return 0 <= i < rows and 0 <= j < cols
