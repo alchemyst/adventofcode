@@ -126,6 +126,8 @@ for i in range(1000):
 solution(counts['low']*counts['high'])
 
 # Part 2
+modules = build_network(filename)
+
 for button_pushes in count(1):
     if push_button(modules, 'rx', 'low'):
         break
