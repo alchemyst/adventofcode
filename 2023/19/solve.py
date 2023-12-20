@@ -1,12 +1,11 @@
 import math
-import sys
 from collections import defaultdict
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 from aoc import solution
 import parse
 
-debug = True
+debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
 blocks = open(filename).read().split('\n\n')
@@ -50,12 +49,31 @@ class Range:
     lower: int
     upper: int
 
-    def with_limit(self, op, rhs):
+    def split(self, op, rhs):
         match op:
             case '>':
-                return Range(max(self.lower, rhs+1), self.upper)
+                if self.lower <= rhs < self.upper:
+                    return (
+                        Range(max(self.lower, rhs + 1), self.upper),
+                        Range(self.lower, min(self.upper, rhs)),
+                    )
+                elif rhs >= self.upper:
+                    return None, self
+                else:
+                    return self, None
             case '<':
-                return Range(self.lower, min(self.upper, rhs-1))
+                if self.lower < rhs <= self.upper:
+                    return (
+                        Range(self.lower, min(self.upper, rhs - 1)),
+                        Range(min(self.upper, rhs), self.upper)
+                    )
+                elif rhs <= self.lower:
+                    return None, self
+                else:
+                    return self, None
+
+    def is_valid(self):
+        return self.lower <= self.upper
 
     def intersection(self, other):
         lower = max(self.lower, other.lower)
@@ -69,6 +87,7 @@ class Range:
     def size(self):
         return self.upper - self.lower + 1
 
+
 r1 = Range(1, 10)
 assert r1.size() == 10
 
@@ -77,6 +96,34 @@ assert r1.intersection(r2) is None
 
 r3 = Range(5, 20)
 assert r1.intersection(r3).size() == 6
+
+left, right = r1.split('<', 5)
+assert left == Range(1, 4)
+assert right == Range(5, 10)
+
+left, right = r1.split('<', 1)
+assert left is None
+assert right == r1
+
+left, right = r1.split('<', 100)
+assert left == r1
+assert right is None
+
+left, right = r1.split('>', 5)
+assert left == Range(6, 10)
+assert right == Range(1, 5)
+
+left, right = r1.split('>', 1)
+assert left == Range(2, 10)
+assert right == Range(1, 1)
+
+left, right = r1.split('>', 0)
+assert left == r1
+assert right is None
+
+left, right = r1.split('>', 100)
+assert left is None
+assert right == r1
 
 
 @dataclass
@@ -106,51 +153,43 @@ assert r1.intersection(r2).size() == 6
 r3 = Region({'x': Range(20, 30), 'y': Range(1, 10)})
 assert r1.intersection(r3) is None
 
+assert r1 != r2
+
+assert r1 == r1
 
 locations = defaultdict(list)
 locations['in'] = [{v: Range(1, 4000) for v in 'xmas'}]
 
-for i in range(20):
+while True:
     for workflow, allowed_values in list(locations.items()):
         if workflow in {'A', 'R'}:
             continue
 
         locations[workflow] = []
-        for allowed_value in allowed_values:
+        for current_value in allowed_values:
             for rule in workflows[workflow]:
                 match rule:
                     case expr, next_state:
                         variable, op, rhs = expr_pattern.parse(expr)
-                        new_value = allowed_value.copy()
-                        new_value[variable] = new_value[variable].with_limit(op, rhs)
-                        locations[next_state].append(new_value)
+                        new_value = current_value.copy()
+                        routed, not_routed = new_value[variable].split(op, rhs)
+                        if routed is not None:
+                            new_value[variable] = routed
+                            locations[next_state].append(new_value)
+                        if not_routed is not None:
+                            current_value[variable] = not_routed
+                        else:
+                            break
                     case [next_state]:
-                        locations[next_state].append(allowed_value)
+                        locations[next_state].append(current_value)
 
+    active_locations = {l for l, v in locations.items() if len(v)}
+    if active_locations == {'A', 'R'}:
+        break
 
-uniques = set(tuple((v, r.lower, r.upper) for v, r in allowed_value.items()) for allowed_value in locations['A'])
+s = sum(math.prod(r.size() for r in location.values()) for location in locations['A'])
 
+if debug:
+    assert s == 167409079868000
 
-def add_region(regions, sign, region):
-    this = sign, region
-    if len(regions) == 0:
-        return [this]
-
-    intersections = []
-    for other_sign, other_region in regions:
-        intersection = region.intersection(other_region)
-        if intersection is not None:
-            intersections = add_region(intersections, -sign*other_sign, intersection)
-
-    return regions + intersections + [this]
-
-
-total_regions = []
-for unique in uniques:
-    region = Region({v: Range(lower, upper) for v, lower, upper in unique})
-    total_regions = add_region(total_regions, 1, region)
-
-s = sum(sign*region.size() for sign, region in total_regions)
-
-print(s - 167409079868000)
 solution(s)
