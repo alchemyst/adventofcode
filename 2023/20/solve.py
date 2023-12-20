@@ -1,5 +1,8 @@
+import math
+
 from collections import defaultdict, Counter
-from itertools import count
+
+import numpy as np
 
 from aoc import solution
 
@@ -11,6 +14,9 @@ class Module:
         self.name = name
         self.upstream = upstream
         self.downstream = downstream
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.name}, {self.upstream}, {self.downstream})'
 
     def handle(self, source, pulse):
         return []
@@ -99,39 +105,52 @@ def build_network(filename):
             if downstream not in modules:
                 modules[downstream] = Module(downstream, upstream[downstream], [])
 
-    return modules
+    return modules, upstream
 
-def push_button(modules, trace_module=None, trace_state=None):
+
+def push_button(modules):
     pulses = [('button', 'low', 'broadcaster')]
     counts = Counter()
     while pulses:
         source, pulse, target = pulses.pop(0)
         counts[pulse] += 1
         pulses += modules[target].handle(source, pulse)
-        if trace_module:
-            for s, p, t in pulses:
-                if t == trace_module and p == trace_state:
-                    return True
 
-    return counts if trace_module is None else False
+    return counts
 
-modules = build_network(filename)
+# Part 1
+modules, upstream = build_network(filename)
 
 counts = Counter()
 for i in range(1000):
     counts += push_button(modules)
 
-
-# Part 1
 solution(counts['low']*counts['high'])
 
 # Part 2
-modules = build_network(filename)
+# This assumption is not super general - I noticed the upstream unit of rx is a conjunction
+# then reasoned that the output will be low when all the conjunction outputs go high at the same time, from being low
+# I spotted that this will be an lcm application, so looked for cycles
+watch_nodes = set(upstream[upstream['rx'][0]])
 
-for button_pushes in count(1):
-    if push_button(modules, 'rx', 'low'):
-        break
-    if button_pushes % 10000 == 0:
-        print(button_pushes)
+cycles = defaultdict(list)
+# give it a while for the cycles to be apparent
+for i in range(1, 15000):
+    pulses = [('button', 'low', 'broadcaster')]
 
-solution(button_pushes)
+    while pulses:
+        source, pulse, target = pulses.pop(0)
+        if target in watch_nodes:
+            cycles[target].append((i, 0 if pulse == 'low' else 1))
+
+        pulses += modules[target].handle(source, pulse)
+
+periods = []
+for name, cycle in cycles.items():
+    a = np.array(cycle)
+    period = np.unique(np.diff(a[a[:, 1] == 0, 0]))
+    assert len(period) == 1
+
+    periods.append(period[0])
+
+solution(math.lcm(*periods))
