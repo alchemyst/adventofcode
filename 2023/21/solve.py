@@ -1,10 +1,11 @@
-from functools import cache
-
 import numpy as np
 from matplotlib import pyplot as plt
 
 from aoc import solution
 from aoc.array import read_board, neighbours
+
+import pickle
+import pathlib
 
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
@@ -17,16 +18,19 @@ start_i, start_j = (int(v[0]) for v in (board == 'S').nonzero())
 board[start_i, start_j] = '.'
 
 # Part 1
-@cache
 def reachable(i, j, steps):
-    if steps == 0:
-        return {(i, j)}
+    points = {(start_i, start_j)}
+    for step in range(steps):
+        new_points = set()
+        for i, j in points:
+            for new_i, new_j in neighbours(board, i, j):
+                if board[new_i, new_j] == '.':
+                    new_points.add((new_i, new_j))
+        points = new_points
 
-    result = set()
-    for ni, nj in neighbours(board, i, j):
-        if board[ni, nj] == '.':
-            result.update(reachable(ni, nj, steps - 1))
-    return result
+    return points
+
+solution(len(reachable(start_i, start_j, 64)))
 
 # Part 2
 directions = (
@@ -36,38 +40,56 @@ directions = (
     (0, 1),
 )
 
-reachable_cache = {}
-def reachable_mod(i, j, steps):
-    key = (i%rows, j%cols, steps)
-
-    if key in reachable_cache:
-        return {(i + di, j + dj) for di, dj in reachable_cache[key]}
-
-    if steps == 0:
-        return {(i, j)}
-    else:
-        result = set()
-        for di, dj in directions:
-            new_i = i + di
-            new_j = j + dj
-            if board[new_i % rows, new_j % cols] == '.':
-                result.update(reachable_mod(new_i, new_j, steps - 1))
-
-    reachable_cache[key] = {(ii - i, jj - j) for ii, jj in result}
-    return result
-
 from tqdm.auto import tqdm
 
-stepp = np.arange(30, 70+1)
-lens = []
-for steps in tqdm(stepp):
-    r = reachable_mod(start_i, start_j, steps)
-    lens.append(len(r))
 
+def reachable_mod(start_i, start_j, steps):
+    points = {(start_i, start_j)}
+    stepp = []
+    lens = []
+    for step in tqdm(range(steps)):
+        new_points = set()
+        for i, j in points:
+            for di, dj in directions:
+                new_i = i + di
+                new_j = j + dj
+                if board[new_i % rows, new_j % cols] == '.':
+                    new_points.add((new_i, new_j))
+        points = new_points
 
-plt.semilogy(stepp[1:], np.diff(lens))
-plt.show()
+        stepp.append(step+1)
+        lens.append(len(points))
 
-r = reachable_mod(start_i, start_j, 100)
+    return stepp, lens
 
-solution(len(r))
+steps = 600
+
+save_path = pathlib.Path(__file__).parent / f'save_{steps}.pickle'
+
+if save_path.exists():
+    stepp, lens = pickle.load(save_path.open('rb'))
+else:
+    stepp, lens = reachable_mod(start_i, start_j, steps)
+    pickle.dump((stepp, lens), save_path.open('wb'))
+
+assert rows == cols
+
+width = rows
+
+target = 26501365
+
+# The repeats follow a quadratic, which looks close enough with numerical methods
+start = target % width - 1
+x = stepp[start::width]
+y = lens[start::width]
+
+# Notice that the second differences are constant
+diffs = np.diff(y, 2)
+assert len(np.unique(diffs)) == 1
+
+# Fit
+poly = np.polyfit(x, y, 2)
+pred = np.polyval(poly, stepp[start::width])
+
+# predict
+solution(int(np.polyval(poly, target)))
