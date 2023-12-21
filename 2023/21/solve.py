@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from aoc import solution
 from aoc.array import read_board, neighbours
 
-debug = True
+debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
 board = np.array(read_board(filename))
@@ -38,13 +38,13 @@ directions = (
 
 reachable_cache = {}
 def reachable_mod(i, j, steps):
-    key = (i, j, steps)
+    key = (i%rows, j%cols, steps)
 
     if key in reachable_cache:
-        return reachable_cache[key]
+        return {(i + di, j + dj) for di, dj in reachable_cache[key]}
 
     if steps == 0:
-        result = {(i, j)}
+        return {(i, j)}
     else:
         result = set()
         for di, dj in directions:
@@ -53,21 +53,21 @@ def reachable_mod(i, j, steps):
             if board[new_i % rows, new_j % cols] == '.':
                 result.update(reachable_mod(new_i, new_j, steps - 1))
 
-    reachable_cache[key] = result
+    reachable_cache[key] = {(ii - i, jj - j) for ii, jj in result}
     return result
 
-# from tqdm.auto import tqdm
-#
-# stepp = np.arange(30, 90+1)
-# lens = []
-# for steps in tqdm(stepp):
-#     r = reachable_mod(start_i, start_j, steps)
-#     lens.append(len(r))
-#
-#
-# plt.semilogy(stepp[1:], np.diff(lens))
-# plt.show()
+from tqdm.auto import tqdm
 
-r = reachable_mod(start_i, start_j, 50)
+stepp = np.arange(30, 70+1)
+lens = []
+for steps in tqdm(stepp):
+    r = reachable_mod(start_i, start_j, steps)
+    lens.append(len(r))
+
+
+plt.semilogy(stepp[1:], np.diff(lens))
+plt.show()
+
+r = reachable_mod(start_i, start_j, 100)
 
 solution(len(r))
