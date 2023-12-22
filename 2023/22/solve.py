@@ -58,20 +58,13 @@ floor = np.zeros((max_x+1, max_y+1), dtype=np.int32)
 top_bricks = -np.ones_like(floor)
 
 settled_bricks = []
-can_be_disintegrated = set()
-uncovered_bricks = set()
 
 for i, brick in enumerate(bricks):
     footprint = brick.footprint()
     floor_max = floor[footprint].max()
     supporting_bricks = set(top_bricks[footprint & (floor == floor_max)]) - {-1}
-    uncovered_bricks -= supporting_bricks
-    if len(supporting_bricks) > 1:
-        can_be_disintegrated.update(supporting_bricks)
     for supporting_brick in supporting_bricks:
         settled_bricks[supporting_brick].supporting.add(i)
-
-    uncovered_bricks.add(i)
 
     new_brick = Brick(brick.x1, brick.y1, floor_max + 1, brick.x2, brick.y2, floor_max + brick.height(), supported_by=supporting_bricks)
     assert brick.size() == new_brick.size()
@@ -80,37 +73,34 @@ for i, brick in enumerate(bricks):
     top_bricks[footprint] = i
     floor[footprint] = new_brick.z2
 
-c = 0
-for brick in settled_bricks:
-    crucial = False
-    for supported_brick_i in brick.supporting:
-        supported_brick = settled_bricks[supported_brick_i]
-        if len(supported_brick.supported_by) == 1:
-            crucial = True
-    if crucial:
-        c += 1
+c = len(bricks) - sum(
+    any(
+        len(settled_bricks[supported_brick_i].supported_by) == 1
+        for supported_brick_i in brick.supporting
+    )
+    for brick in settled_bricks
+)
+
+solution(c)
+
+# part 2
+def extra_fallen(i):
+    fallens = {i}
+    processing = True
+    while processing:
+        processing = False
+        for fallen_i in list(fallens):
+            fallen_brick = settled_bricks[fallen_i]
+            for supported_brick_i in fallen_brick.supporting:
+                if supported_brick_i in fallens:
+                    continue
+
+                supported_brick = settled_bricks[supported_brick_i]
+                if supported_brick.supported_by and supported_brick.supported_by <= fallens:
+                    fallens.add(supported_brick_i)
+                    processing = True
+    return len(fallens) - 1
 
 
-solution(len(bricks) - c)
-
-
-# Part 2
-@cache
-def extra_fallen(fallen_bricks):
-    fallen_bricks = set(fallen_bricks)
-    s = set()
-
-    for i, brick in enumerate(settled_bricks):
-        if i in fallen_bricks:
-            continue
-
-        if brick.supported_by and brick.supported_by <= fallen_bricks:
-            s.add(i)
-            s |= extra_fallen(tuple(fallen_bricks | {i}))
-
-    return s
-
-from tqdm.auto import tqdm
-
-solution(sum(len(extra_fallen((i,))) for i in tqdm(range(len(settled_bricks)))))
+solution(sum(extra_fallen(i) for i in (range(len(settled_bricks)))))
 
