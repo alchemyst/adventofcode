@@ -1,11 +1,8 @@
 import numpy as np
-from matplotlib import pyplot as plt
+import scipy.ndimage as ndi
 
 from aoc import solution
-from aoc.array import read_board, neighbours
-
-import pickle
-import pathlib
+from aoc.array import read_board
 
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
@@ -18,61 +15,34 @@ start_i, start_j = (int(v[0]) for v in (board == 'S').nonzero())
 board[start_i, start_j] = '.'
 
 # Part 1
-def reachable(i, j, steps):
-    points = {(start_i, start_j)}
-    for step in range(steps):
-        new_points = set()
-        for i, j in points:
-            for new_i, new_j in neighbours(board, i, j):
-                if board[new_i, new_j] == '.':
-                    new_points.add((new_i, new_j))
-        points = new_points
+def reachable(board, i, j, steps):
+    garden = board == '.'
+    visited = np.zeros_like(board, dtype=bool)
+    visited[i, j] = True
+    region = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=bool)
 
-    return points
-
-solution(len(reachable(start_i, start_j, 64)))
-
-# Part 2
-directions = (
-    (-1, 0),
-    (1, 0),
-    (0, -1),
-    (0, 1),
-)
-
-from tqdm.auto import tqdm
-
-
-def reachable_mod(start_i, start_j, steps):
-    points = {(start_i, start_j)}
-    stepp = []
+    stepp = np.arange(1, steps+1)
     lens = []
-    for step in tqdm(range(steps)):
-        new_points = set()
-        for i, j in points:
-            for di, dj in directions:
-                new_i = i + di
-                new_j = j + dj
-                if board[new_i % rows, new_j % cols] == '.':
-                    new_points.add((new_i, new_j))
-        points = new_points
-
-        stepp.append(step+1)
-        lens.append(len(points))
+    for _ in stepp:
+        ndi.convolve(visited, region, output=visited, mode='constant', cval=0)
+        visited &= garden
+        lens.append(visited.sum())
 
     return stepp, lens
 
-steps = 600
 
-save_path = pathlib.Path(__file__).parent / f'save_{steps}.pickle'
+stepp, lens = reachable(board, start_i, start_j, 64)
+solution(lens[-1])
 
-if save_path.exists():
-    stepp, lens = pickle.load(save_path.open('rb'))
-else:
-    stepp, lens = reachable_mod(start_i, start_j, steps)
-    pickle.dump((stepp, lens), save_path.open('wb'))
-
+# Part 2
 assert rows == cols
+
+steps = 600
+boards_needed = (steps - rows//2)//rows*2 + 1
+
+big_board = np.tile(board, (boards_needed, boards_needed))
+
+stepp, lens = reachable(big_board, start_i + rows*(boards_needed//2), start_j + rows*(boards_needed//2), steps)
 
 width = rows
 
