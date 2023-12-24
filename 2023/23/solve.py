@@ -1,3 +1,5 @@
+from functools import cache
+
 import networkx as nx
 import numpy as np
 
@@ -20,8 +22,26 @@ slopes = {
     '^': (-1, 0),
 }
 
-def longest_path(graph):
+
+def longest_path(start, end):
     return max(nx.path_weight(graph, path, 'weight') for path in nx.all_simple_paths(graph, start, end))
+
+
+@cache
+def longest_path2(start, end, seen=()):
+    if start == end:
+        return 0
+
+    return max(
+        (
+            longest_path2(other, end, tuple(sorted(seen + (other,)))) + graph[start][other]['weight']
+            for other in graph.neighbors(start)
+            if other not in seen
+        )
+        ,
+        default=0
+    )
+
 
 # Part 1
 graph = nx.DiGraph()
@@ -51,7 +71,30 @@ for this, b in np.ndenumerate(board):
                     graph.add_edge(this, other, weight=1)
 
 
-solution(longest_path(graph))
+# remove nodes in a chain, replace with edge with sums of incoming edge weights
+print("Nodes before:", len(graph.nodes))
+running = True
+while running:
+    running = False
+    for node in list(graph.nodes):
+        if graph.degree(node) != 4:
+            continue
+
+        linked = list(graph.neighbors(node))
+        if len(linked) != 2:
+            continue
+
+        u, v = linked
+        weight = graph[node][u]['weight'] + graph[node][v]['weight']
+        graph.add_edge(u, v, weight=weight)
+        graph.add_edge(v, u, weight=weight)
+        graph.remove_node(node)
+        running = True
+
+print("Nodes after:", len(graph.nodes))
+
+
+solution(longest_path2(start, end))
 
 # Part 2
 graph = nx.Graph()
@@ -69,7 +112,7 @@ for this, b in np.ndenumerate(board):
 
 # simplify graph:
 # remove nodes with degree 2, replace with edge with sums of incoming edge weights
-print("Edges before:", len(graph.edges))
+print("Nodes before:", len(graph.nodes))
 running = True
 while running:
     running = False
@@ -77,10 +120,11 @@ while running:
         if graph.degree(node) == 2:
             neighbours = list(graph.neighbors(node))
             u, v = neighbours
-            graph.add_edge(u, v, weight=graph[u][node]['weight'] + graph[node][v]['weight'])
+            graph.add_edge(u, v, weight=graph[node][u]['weight'] + graph[node][v]['weight'])
             graph.remove_node(node)
-            modified = True
+            running = True
 
-print("Edges after:", len(graph.edges))
+print("Nodes after:", len(graph.nodes))
 
-solution(longest_path(graph))
+longest_path2.cache_clear()
+solution(longest_path2(start, end))
