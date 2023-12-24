@@ -20,6 +20,9 @@ slopes = {
     '^': (-1, 0),
 }
 
+def longest_path(graph):
+    return max(nx.path_weight(graph, path, 'weight') for path in nx.all_simple_paths(graph, start, end))
+
 # Part 1
 graph = nx.DiGraph()
 
@@ -31,24 +34,24 @@ for this, b in np.ndenumerate(board):
         di, dj = slopes[b]
         other = i + di, j + dj
         if board[other] != '#':
-            graph.add_edge(this, other)
+            graph.add_edge(this, other, weight=1)
     elif b == '.':
         for other in neighbours(board, *this):
             bo = board[other]
             if bo == "#":
                 continue
             elif bo == ".":
-                graph.add_edge(this, other)
-                graph.add_edge(other, this)
+                graph.add_edge(this, other, weight=1)
+                graph.add_edge(other, this, weight=1)
             elif bo in slopes:
                 oi, oj = other
                 di, dj = slopes[bo]
                 down_slope = oi + di, oj + dj
                 if this != down_slope:
-                    graph.add_edge(this, other)
+                    graph.add_edge(this, other, weight=1)
 
 
-solution(max(nx.path_weight(graph, path, 'weight') for path in nx.all_simple_paths(graph, start, end)))
+solution(longest_path(graph))
 
 # Part 2
 graph = nx.Graph()
@@ -80,4 +83,4 @@ while running:
 
 print("Edges after:", len(graph.edges))
 
-solution(max(nx.path_weight(graph, path, 'weight') for path in nx.all_simple_paths(graph, start, end)))
+solution(longest_path(graph))
