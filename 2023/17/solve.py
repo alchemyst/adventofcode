@@ -1,5 +1,5 @@
 import networkx as nx
-import matplotlib.pyplot as plt
+
 
 import numpy as np
 
@@ -7,6 +7,7 @@ from aoc import solution
 from aoc.array import read_board, neighbours
 
 debug = False
+plot = False
 filename = 'test.txt' if debug else 'input.txt'
 
 board = np.array(read_board(filename, int))
@@ -103,7 +104,7 @@ def solve(min_step, max_distance):
 
     return path, heat_loss
 
-def plot(board, path):
+def plot_path(board, path):
     plot_path = [p[:2] for p in path]
 
     plt.imshow(board)
@@ -113,14 +114,17 @@ def plot(board, path):
 # Part 1
 path, heat_loss = solve(min_step=1, max_distance=3)
 
-plot(board, path)
+if plot:
+    import matplotlib.pyplot as plt
+    plot_path(board, path)
 
 solution(heat_loss)
 
 # Part 2
 path, heat_loss = solve(min_step=4, max_distance=10)
 
-plot(board, path)
+if plot:
+    plot_path(board, path)
 
 solution(heat_loss)
 
