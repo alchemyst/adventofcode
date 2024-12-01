@@ -10,7 +10,7 @@ lefts = np.sort(numbers[:, 0])
 rights = np.sort(numbers[:, 1])
 
 # Part 1
-solution(np.abs(lefts - rights).sum())
+solution(np.linalg.norm(lefts - rights, 1))
 
 # Part 2
 right_counts = Counter(rights)
