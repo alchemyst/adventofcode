@@ -1,28 +1,17 @@
-from collections import Counter
-
 from aoc import solution
+from collections import Counter
+import numpy as np
 
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
-lefts = []
-rights = []
-
-with open(filename) as f:
-    for line in f:
-        left, right = line.strip().split()
-        lefts.append(int(left))
-        rights.append(int(right))
-
-lefts.sort()
-rights.sort()
-
-diffs = (abs(left - right) for left, right in zip(lefts, rights))
+numbers = np.loadtxt(filename, dtype=int)
+lefts = np.sort(numbers[:, 0])
+rights = np.sort(numbers[:, 1])
 
 # Part 1
-solution(sum(diffs))
+solution(np.abs(lefts - rights).sum())
 
 # Part 2
 right_counts = Counter(rights)
-similarity_score = sum(right_counts[left]*left for left in lefts)
-solution(similarity_score)
+solution(sum(right_counts[left] * left for left in lefts))
