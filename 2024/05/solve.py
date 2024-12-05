@@ -1,10 +1,12 @@
 from graphlib import TopologicalSorter
 from collections import defaultdict
 
+import more_itertools
+
 import aoc.parse
 from aoc import solution
 
-debug = False
+debug = True
 filename = 'test.txt' if debug else 'input.txt'
 
 orders = []
@@ -26,22 +28,14 @@ def order(update):
     sorter = TopologicalSorter(graph)
     return tuple(item for item in sorter.static_order() if item in update)
 
-# Part 1
-s = 0
-incorrect = []
-for update in updates:
-    correct_order = order(update)
-    if update == correct_order:
-        s += update[len(update)//2]
-    else:
-        incorrect.append(update)
+def midway(update):
+    return update[len(update)//2]
 
-solution(s)
+# Part 1
+correct_orders = [order(update) for update in updates]
+incorrect, correct = more_itertools.partition(lambda x: x[0] == x[1], zip(updates, correct_orders))
+
+solution(sum(midway(update) for update, _ in correct))
 
 # Part 2
-s = 0
-for update in incorrect:
-    correct_order = order(update)
-    s += correct_order[len(correct_order)//2]
-
-solution(s)
+solution(sum(midway(corrected) for _, corrected in incorrect))
