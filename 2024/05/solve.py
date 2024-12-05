@@ -6,7 +6,7 @@ import more_itertools
 import aoc.parse
 from aoc import solution
 
-debug = True
+debug = False
 filename = 'test.txt' if debug else 'input.txt'
 
 orders = []
@@ -25,8 +25,8 @@ def order(update):
     for before, after in orders:
         if before in update and after in update:
             graph[after].append(before)
-    sorter = TopologicalSorter(graph)
-    return tuple(item for item in sorter.static_order() if item in update)
+
+    return tuple(TopologicalSorter(graph).static_order())
 
 def midway(update):
     return update[len(update)//2]
