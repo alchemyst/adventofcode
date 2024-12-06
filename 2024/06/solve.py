@@ -75,8 +75,12 @@ def stop_condition(board, guard, guard_direction):
 
         history.add(state)
 
+# this is a really slow solution. I think you can do much better by only trying
+# locations that you previously discovered were in the guard's path (so taking
+# direction into account as well as the locations as I have below).
+
 s = 0
-for i, j in np.nditer(np.where(board == '.')):
+for i, j in np.nditer(np.where((board == '.') & (steps == 1))):
     # skip initial guard position
     if ((i, j) == guard).all():
         continue
