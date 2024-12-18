@@ -36,11 +36,18 @@ def board_graph(cutoff):
 solution(nx.shortest_path_length(board_graph(cutoff), (0, 0), (board_size, board_size)))
 
 # Part 2
+left = cutoff
+right = len(bytes) - 1
+
 while True:
-    cutoff += 1
-    print(cutoff)
-    graph = board_graph(cutoff)
-    if not nx.has_path(graph, (0, 0), (board_size, board_size)):
+    midpoint = (left + right) // 2
+    graph = board_graph(midpoint)
+    if nx.has_path(graph, (0, 0), (board_size, board_size)):
+        left = midpoint
+    else:
+        right = midpoint
+
+    if left == right - 1:
         break
 
-solution(','.join(map(str, bytes[cutoff-1])))
+solution(','.join(map(str, bytes[left])))
