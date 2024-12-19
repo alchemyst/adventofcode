@@ -1,7 +1,7 @@
+from functools import lru_cache
+
 from aoc import solution
 import pathlib
-import re
-import itertools
 
 debug = False
 filename = pathlib.Path('test.txt' if debug else 'input.txt')
@@ -10,38 +10,33 @@ patterns, designs = filename.read_text().split("\n\n")
 patterns = patterns.split(", ")
 designs = designs.split("\n")
 
-patterns.sort(key=lambda x: len(x))
-
+@lru_cache
 def matches(patterns, design):
-    towel_matcher = re.compile("^(" + "|".join(p for p in patterns if p in design) + ")+$")
-    return bool(towel_matcher.match(design))
+    subset = tuple(p for p in patterns if p in design)
+    if not subset:
+        return 0
 
-print("Before", len(patterns))
+    ways = 0
+    for p in subset:
+        if design == p:
+            ways += 1
+        if design.startswith(p):
+            ways += matches(subset, design[len(p):])
 
-while True:
-    combopatterns = []
-    for i in range(1, 2):
-        for subset in itertools.combinations(patterns, i):
-            # print(subset)
-            for otherpattern in patterns:
-                if otherpattern in subset:
-                    continue
-                if matches(subset, otherpattern):
-                    combopatterns.append(otherpattern)
-    for c in combopatterns:
-        patterns.remove(c)
-    if not combopatterns:
-        break
-
-print("After", len(patterns))
+    return ways
 
 
-s = 0
+working = 0
+total_ways = 0
 for design in designs:
-    s += matches(patterns, design)
+    ways = matches(tuple(patterns), design)
+    if debug:
+        print(design, ways)
+    working += bool(ways)
+    total_ways += ways
 
 # Part 1
-solution(s)
+solution(working)
 
 # Part 2
-solution('Dummy')
+solution(total_ways)
