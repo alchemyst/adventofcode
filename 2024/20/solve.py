@@ -4,7 +4,7 @@ from aoc import solution
 import aoc.array
 import numpy as np
 import networkx as nx
-import scipy.ndimage as sci
+from itertools import combinations
 
 debug = False
 filename = 'test.txt' if debug else 'input.txt'
@@ -33,50 +33,29 @@ def board_graph(board):
 
     return graph
 
-def board_with_cheat(board, cheat1, cheat2):
-    new_board = board.copy()
-    new_board[cheat1] = '.'
-    new_board[cheat2] = '.'
-
-    return new_board
-
-def shortest_path(board, start, end):
-    graph = board_graph(board)
-    return nx.shortest_path_length(graph, tuple(start), tuple(end))
-
 # Part 1
-counter = Counter()
+def distance(a, b):
+    return np.sum(np.abs(np.array(a) - np.array(b)))
 
-original_shortest = shortest_path(board, start, end)
-print(original_shortest)
+graph = board_graph(board)
 
-walls = board == '#'
-opens = (~walls).astype(int)
-simple_walls = (
-        walls & (
-        (sci.convolve(opens, [[1, 0, 1]]) == 2)
-        | (sci.convolve(opens, [[1], [0], [1]]) == 2)
-    )
-)
+shortest_path = nx.shortest_path(graph, tuple(start), tuple(end))
 
-aoc.print_board(simple_walls, type='d')
+def cheats(min_length, max_length, min_savings):
+    s = 0
+    for i, j in combinations(range(len(shortest_path)), 2):
+        cheat_start = shortest_path[i]
+        cheat_end = shortest_path[j]
 
-wall_i, wall_j = np.where(simple_walls)
-print(len(wall_i))
-s = 0
-for ii, cheat in enumerate(zip(wall_i, wall_j)):
-    print(ii)
-    shortest_with_cheat = shortest_path(board_with_cheat(board, cheat, cheat), start, end)
-    savings = original_shortest - shortest_with_cheat
+        d = distance(cheat_start, cheat_end)
+        if min_length <= d <= max_length:
+            savings = j - i - d
 
-    counter[savings] += 1
+            if savings >= min_savings:
+                s += 1
 
-    if savings >= 100:
-        s += 1
+    return s
 
-print(sorted(counter.most_common()))
-
-solution(s)
-
+solution(cheats(2, 2, 100))
 # Part 2
-solution('Dummy')
+solution(cheats(1, 20, 100))
