@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from itertools import pairwise
 from textwrap import dedent
 import networkx as nx
+from functools import lru_cache
 
 from aoc import solution
 
@@ -87,28 +88,44 @@ class Stack:
 stack = Stack([Finger(directional_moves), Finger(directional_moves), numeric])
 # output = print(stack.simulate("<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A", 'AAA'))
 
-def shortest(sequence, finger):
+pad_types = [numeric, Finger(directional_moves)]
+
+@lru_cache
+def graph_from_finger(finger):
     graph = nx.DiGraph()
-    for (start, move), end in finger.moves.items():
+    for (start, move), end in pad_types[finger].moves.items():
         graph.add_edge(start, end, move=move)
+
+    return graph
+
+@lru_cache(maxsize=1000000)
+def all_shortest_paths(finger, start, end):
+    graph = graph_from_finger(finger)
+    options = []
+    for path in nx.all_shortest_paths(graph, start, end):
+        output = (
+            ''.join(
+                graph[node1][node2]['move'] for node1, node2 in pairwise(path)
+            )
+            + "A"
+        )
+        options.append(output)
+
+    return options
+
+
+@lru_cache(maxsize=1000000)
+def shortest(sequence, finger):
 
     outputs = []
     for start, end in pairwise("A" + sequence):
-        options = []
-        for path in nx.all_shortest_paths(graph, start, end):
-            output = ''
-            for node1, node2 in pairwise(path):
-                output += graph[node1][node2]['move']
-            output += "A"
+        outputs.append(all_shortest_paths(finger, start, end))
 
-            options.append(output)
-        outputs.append(options)
-
-    return outputs
+    return [''.join(combo) for combo in itertools.product(*outputs)]
 
 
 def solve(stack_size):
-    stack = [numeric] + [Finger(directional_moves) for _ in range(stack_size)]
+    stack = [0] + [1]*stack_size
     s = 0
     for code in lines:
         sequences = [code.strip()]
@@ -116,9 +133,14 @@ def solve(stack_size):
         for finger in stack:
             new_sequences = set()
             for sequence in sequences:
-                new_sequences.update(''.join(combo) for combo in itertools.product(*shortest(sequence, finger)))
+                subsequences = [s + "A" for s in sequence.split("A")[:-1]]
 
-            sequences = list(new_sequences)
+                new_sequences.update(''.join(combo) for combo in itertools.product(*[shortest(subsequence, finger) for subsequence in subsequences]))
+
+
+            min_len = min(len(s) for s in new_sequences)
+            sequences = [s for s in new_sequences if len(s) == min_len]
+            print(len(sequences))
 
         sequence = min(sequences, key=lambda x: len(x))
         complexity = len(sequence) * int(code[:-1])
