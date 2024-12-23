@@ -62,8 +62,6 @@ for i, graph in enumerate([numeric, directional]):
         for path in nx.all_shortest_paths(graph, start, end):
             move = ''.join(graph[path_a][path_b]["direction"] for path_a, path_b in pairwise(path)) + 'A'
             moves[start, end].append(move)
-        if start == end:
-            moves[start, end] = ["A"]
 
 @lru_cache
 def shortest_path(code, depth):
