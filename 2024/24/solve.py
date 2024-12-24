@@ -1,6 +1,6 @@
 from aoc import solution
 import pathlib
-import graphlib
+import networkx as nx
 from operator import __or__, __and__, __xor__
 
 WIRE_OPS = {
@@ -19,19 +19,19 @@ wires = {
     for line in wires_spec.splitlines(keepends=False)
 }
 
-graph = graphlib.TopologicalSorter()
-
-operations = {}
+graph = nx.DiGraph()
 
 for i1, op, i2, _, o in map(str.split, connections_spec.splitlines(keepends=False)):
-    operations[o] = (i1, op, i2)
-    graph.add(o, i1, i2)
+    print(o)
+    graph.add_node(o, operation=(i1, op, i2))
+    graph.add_edge(i1, o)
+    graph.add_edge(i2, o)
 
-for wire in graph.static_order():
+for wire in nx.topological_sort(graph):
     if wire in wires:
         continue
     print(wire)
-    i1, op, i2 = operations[wire]
+    i1, op, i2 = graph.nodes[wire]["operation"]
     wires[wire] = WIRE_OPS[op](wires[i1], wires[i2])
 
 def output_bits(wires):
