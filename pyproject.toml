@@ -1,0 +1,17 @@
+[project]
+name = "adventofcode"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "advent-of-code-data>=2.1.0",
+    "ipykernel>=7.1.0",
+    "matplotlib>=3.10.7",
+    "more-itertools>=10.8.0",
+    "networkx>=3.6",
+    "numpy>=2.3.5",
+    "pandas>=2.3.3",
+    "parse>=1.20.2",
+    "pulp>=3.3.0",
+    "rich>=14.2.0",
+    "scipy>=1.16.3",
+]
